@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  Zap, 
-  Target, 
-  BarChart3, 
-  ShieldCheck, 
-  Clock, 
-  Users, 
-  ChevronRight, 
-  Github, 
-  Twitter, 
-  Linkedin, 
+import {
+  Zap,
+  Target,
+  BarChart3,
+  ShieldCheck,
+  Clock,
+  Users,
+  ChevronRight,
+  Github,
+  Twitter,
+  Linkedin,
   Mail,
   Sparkles,
   Search,
@@ -24,54 +24,116 @@ import {
   Briefcase,
   Lightbulb,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 function App() {
-  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', or 'analysis_results'
+  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', or 'auth'
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (data) => {
+    setIsLoggedIn(true);
+    // Extract user info and tokens from the API response
+    const userData = data.user || data;
+    setUser(userData);
+    
+    if (data.access) {
+      localStorage.setItem('token', data.access);
+    }
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    setView('home');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setView('home');
+  };
+
+  React.useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (savedToken && savedUser) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const navigateToProtected = (targetView) => {
+    if (isLoggedIn) {
+      setView(targetView);
+    } else {
+      setAuthMode('login');
+      setView('auth');
+    }
+  };
 
   const renderView = () => {
-    switch(view) {
+    switch (view) {
       case 'home':
         return (
-          <Home 
-            onStartShortlisting={() => setView('shortlisting')} 
-            onStartPersonalization={() => setView('personalization')}
+          <Home
+            isLoggedIn={isLoggedIn}
+            onStartShortlisting={() => navigateToProtected('shortlisting')}
+            onStartPersonalization={() => navigateToProtected('personalization')}
+            onLogin={() => { setAuthMode('login'); setView('auth'); }}
+            onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
+            onLogout={handleLogout}
           />
         );
       case 'shortlisting':
         return (
-          <Shortlisting 
-            onBack={() => setView('home')} 
-            onAnalyze={() => setView('results')} 
+          <Shortlisting
+            onBack={() => setView('home')}
+            onAnalyze={() => setView('results')}
           />
         );
       case 'results':
         return (
-          <Results 
-            onBackToForm={() => setView('shortlisting')} 
-            onBackToHome={() => setView('home')} 
+          <Results
+            onBackToForm={() => setView('shortlisting')}
+            onBackToHome={() => setView('home')}
           />
         );
       case 'personalization':
         return (
-          <Personalization 
-            onBack={() => setView('home')} 
+          <Personalization
+            onBack={() => setView('home')}
             onAnalyze={() => setView('analysis_results')}
           />
         );
       case 'analysis_results':
         return (
-          <AnalysisResults 
-            onBack={() => setView('personalization')} 
+          <AnalysisResults
+            onBack={() => setView('personalization')}
             onBackToHome={() => setView('home')}
+          />
+        );
+      case 'auth':
+        return (
+          <Auth
+            mode={authMode}
+            onToggleMode={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+            onSuccess={handleLogin}
+            onBack={() => setView('home')}
           />
         );
       default:
         return (
-          <Home 
-            onStartShortlisting={() => setView('shortlisting')} 
-            onStartPersonalization={() => setView('personalization')}
+          <Home
+            isLoggedIn={isLoggedIn}
+            onStartShortlisting={() => navigateToProtected('shortlisting')}
+            onStartPersonalization={() => navigateToProtected('personalization')}
+            onLogin={() => { setAuthMode('login'); setView('auth'); }}
+            onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
+            onLogout={handleLogout}
           />
         );
     }
@@ -82,7 +144,7 @@ function App() {
       {/* Glow Effects */}
       <div className="glow-purple" style={{ top: '10%', right: '-10%' }}></div>
       <div className="glow-cyan" style={{ top: '40%', left: '-10%' }}></div>
-      
+
       <div className="container">
         {renderView()}
       </div>
@@ -90,7 +152,7 @@ function App() {
   );
 }
 
-function Home({ onStartShortlisting, onStartPersonalization }) {
+function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onLogin, onSignUp, onLogout }) {
   return (
     <>
       {/* Navbar */}
@@ -106,7 +168,16 @@ function Home({ onStartShortlisting, onStartPersonalization }) {
           <a href="#pricing">Pricing</a>
           <a href="#about">About</a>
         </div>
-        <a href="#" className="btn-get-started">Get Started</a>
+        <div className="nav-auth-btns">
+          {isLoggedIn ? (
+            <button onClick={onLogout} className="btn-logout">Logout</button>
+          ) : (
+            <>
+              <a href="#" onClick={(e) => { e.preventDefault(); onLogin(); }} className="btn-login">Login</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onSignUp(); }} className="btn-signup">Sign Up</a>
+            </>
+          )}
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -122,7 +193,7 @@ function Home({ onStartShortlisting, onStartPersonalization }) {
             <span className="gradient-text">Platform</span>
           </h1>
           <p className="hero-description">
-            Transform your hiring process with intelligent resume screening. 
+            Transform your hiring process with intelligent resume screening.
             Analyze candidates instantly with precision and accuracy powered by next-gen AI.
           </p>
           <div className="hero-btns">
@@ -168,40 +239,40 @@ function Home({ onStartShortlisting, onStartPersonalization }) {
         </div>
 
         <div className="features-grid">
-          <FeatureCard 
-            icon={<Zap size={24} color="#f59e0b" />} 
+          <FeatureCard
+            icon={<Zap size={24} color="#f59e0b" />}
             bg="#fef3c7"
-            title="Instant Analysis" 
+            title="Instant Analysis"
             description="AI-powered resume screening in seconds with deeper insights on qualifications."
           />
-          <FeatureCard 
-            icon={<Search size={24} color="#06b6d4" />} 
+          <FeatureCard
+            icon={<Search size={24} color="#06b6d4" />}
             bg="#ecfeff"
-            title="Precision Matching" 
+            title="Precision Matching"
             description="Advanced algorithms match candidates to job requirements with accuracy."
           />
-          <FeatureCard 
-            icon={<BarChart3 size={24} color="#ec4899" />} 
+          <FeatureCard
+            icon={<BarChart3 size={24} color="#ec4899" />}
             bg="#fdf2f8"
-            title="Smart Analytics" 
+            title="Smart Analytics"
             description="Comprehensive insights to make informed hiring decisions across your pipeline."
           />
-          <FeatureCard 
-            icon={<ShieldCheck size={24} color="#10b981" />} 
+          <FeatureCard
+            icon={<ShieldCheck size={24} color="#10b981" />}
             bg="#ecfdf5"
-            title="Bias Reduction" 
+            title="Bias Reduction"
             description="Fair evaluation process focused on skills and qualifications alone."
           />
-          <FeatureCard 
-            icon={<Clock size={24} color="#ef4444" />} 
+          <FeatureCard
+            icon={<Clock size={24} color="#ef4444" />}
             bg="#fef2f2"
-            title="Time Saving" 
+            title="Time Saving"
             description="Reduce screening time by 90% while improving talent quality."
           />
-          <FeatureCard 
-            icon={<Users size={24} color="#8b5cf6" />} 
+          <FeatureCard
+            icon={<Users size={24} color="#8b5cf6" />}
             bg="#f5f3ff"
-            title="Team Collaboration" 
+            title="Team Collaboration"
             description="Share insights and collaborate with your hiring team seamlessly."
           />
         </div>
@@ -216,25 +287,25 @@ function Home({ onStartShortlisting, onStartPersonalization }) {
         </div>
 
         <div className="trust-grid">
-          <TrustCard 
-            icon={<Users size={20} />} 
-            value="50,000+" 
-            label="Resumes Analyzed" 
+          <TrustCard
+            icon={<Users size={20} />}
+            value="50,000+"
+            label="Resumes Analyzed"
           />
-          <TrustCard 
-            icon={<Target size={20} />} 
-            value="1,200+" 
-            label="Companies" 
+          <TrustCard
+            icon={<Target size={20} />}
+            value="1,200+"
+            label="Companies"
           />
-          <TrustCard 
-            icon={<CheckCircle2 size={20} />} 
-            value="95%" 
-            label="Accuracy Rate" 
+          <TrustCard
+            icon={<CheckCircle2 size={20} />}
+            value="95%"
+            label="Accuracy Rate"
           />
-          <TrustCard 
-            icon={<Globe size={20} />} 
-            value="40+" 
-            label="Countries" 
+          <TrustCard
+            icon={<Globe size={20} />}
+            value="40+"
+            label="Countries"
           />
         </div>
       </section>
@@ -590,11 +661,226 @@ function AnalysisResults({ onBack, onBackToHome }) {
   );
 }
 
+function Auth({ mode, onToggleMode, onSuccess, onBack }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const endpoint = mode === 'login' 
+        ? '/api/auth/signin/' 
+        : '/api/auth/signup/';
+
+      const body = mode === 'login' 
+        ? { email, password } 
+        : { name, email, password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error('Invalid server response. Please ensure your dev server was restarted.');
+      }
+
+      if (response.ok) {
+        onSuccess(data);
+      } else {
+        setError(data.message || 'Authentication failed. Please check your credentials.');
+      }
+    } catch (err) {
+      console.error('Login Error Deep Dive:', {
+        message: err.message,
+        stack: err.stack,
+        hint: 'If this works in Postman but not here, it is likely a CORS issue. The backend must allow your origin.'
+      });
+      setError(`Connection error: ${err.message}. Please check CORS settings on the backend.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-screen">
+      <div className="auth-main">
+        {/* Left Side: Form */}
+        <div className="auth-left">
+          <div className="auth-form-container">
+            <div className="auth-brand" onClick={onBack} style={{ cursor: 'pointer' }}>
+              <h1 className="logo-text">CVJACHAI</h1>
+              <p>Welcome back to intelligent hiring</p>
+            </div>
+
+            <form className="auth-form-fields" onSubmit={handleSubmit}>
+              {error && <div className="auth-error-message">{error}</div>}
+              {mode === 'signup' && (
+                <div className="form-group-modern">
+                  <label>Full Name</label>
+                  <div className="input-box">
+                    <Users size={18} className="input-icon-left" />
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="form-group-modern">
+                <label>Email Address</label>
+                <div className="input-box">
+                  <Mail size={18} className="input-icon-left" />
+                  <input
+                    type="email"
+                    placeholder="name@company.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group-modern">
+                <label>Password</label>
+                <div className="input-box">
+                  <ShieldCheck size={18} className="input-icon-left" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-options">
+                <label className="checkbox-container">
+                  <input type="checkbox" disabled={isLoading} />
+                  <span className="checkmark"></span>
+                  Remember me
+                </label>
+                <a href="#" className="forgot-link" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
+              </div>
+
+              <button type="submit" className="btn-login-gradient" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="loader-container">
+                    <span className="loader"></span>
+                    Processing...
+                  </span>
+                ) : (
+                  mode === 'login' ? 'Login' : 'Sign Up'
+                )}
+              </button>
+            </form>
+
+
+            <div className="auth-switch">
+              <span>{mode === 'login' ? "Don't have an account?" : "Already have an account?"}</span>
+              <button onClick={onToggleMode}>{mode === 'login' ? 'Sign Up' : 'Login'}</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Visual */}
+        <div className="auth-right">
+          <div className="visual-wrapper">
+            <div className="visual-card">
+              <div className="card-header-cv">
+                <div className="cv-icon"><FileText size={16} /></div>
+                <div className="cv-details">
+                  <span className="cv-label">CANDIDATE CV</span>
+                  <span className="cv-name">Alex Rivers.pdf</span>
+                </div>
+              </div>
+              <div className="cv-progress-bar">
+                <div className="progress-fill"></div>
+              </div>
+
+              <div className="ai-chip-visual">
+                <div className="chip-rect">
+                  <span className="chip-text">AI</span>
+                  <span className="chip-sub">INTERNVACE</span>
+                </div>
+                <div className="pulse-circle"></div>
+              </div>
+
+              <div className="match-score-card">
+                <span className="match-label">MATCH SCORE</span>
+                <span className="match-value">95%</span>
+                <div className="match-badge">
+                  <Zap size={10} fill="currentColor" />
+                  EXCELLENT FIT
+                </div>
+              </div>
+
+              <div className="skill-tags">
+                <span className="tag">AI Engineering</span>
+                <span className="tag">PyTorch</span>
+              </div>
+            </div>
+
+            <div className="visual-text">
+              <h2>Architecting the future of recruitment.</h2>
+              <p>Leverage our deep neural networks to identify top 1% talent in seconds, not weeks.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer className="auth-footer-modern">
+        <div className="footer-left-modern">
+          <span className="footer-brand-name">CVJACHAI</span>
+          <span className="copyright">© 2026 CVJACHAI. Architecting the future of recruitment.</span>
+        </div>
+        <div className="footer-right-modern">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Security</a>
+          <a href="#">Status</a>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 function FeatureCard({ icon, title, description, bg }) {
   return (
     <div className="feature-card">
-      <div 
-        className="feature-icon-wrapper" 
+      <div
+        className="feature-icon-wrapper"
         style={{ backgroundColor: bg }}
       >
         {icon}
