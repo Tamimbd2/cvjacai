@@ -63,16 +63,16 @@ function App() {
             color: 'white',
             textAlign: 'center'
           }}>
-            <div className="processing-visual-lottie" style={{ width: '400px', height: '400px', marginBottom: '-50px' }}>
+            <div className="processing-visual-lottie" style={{ width: '400px', height: '400px', marginBottom: '-40px', position: 'relative' }}>
               <Lottie 
-                animationData={null} // We will use path instead
+                animationData={null}
                 style={{ width: '100%', height: '100%' }}
-                path="https://lottie.host/69669539-75f8-4a6f-a96c-829d59218d6e/yU4Fh02Vl8.json"
+                path="https://assets10.lottiefiles.com/packages/lf20_96bovdur.json"
                 loop={true}
               />
             </div>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '15px', letterSpacing: '-1px', zIndex: 10 }}>AI is analyzing resumes...</h1>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem', maxWidth: '500px', zIndex: 10 }}>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '15px', letterSpacing: '-1px', zIndex: 10, position: 'relative' }}>AI is analyzing resumes...</h1>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem', maxWidth: '500px', zIndex: 10, position: 'relative' }}>
               Our neural networks are scanning for the best matches based on your criteria. This usually takes a few seconds.
             </p>
           </div>
