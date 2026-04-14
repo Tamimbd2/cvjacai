@@ -20,6 +20,8 @@ function App() {
     }
   }, []);
 
+  const [analysisData, setAnalysisData] = useState(null);
+
   const handleLogin = (data) => {
     setIsLoggedIn(true);
     setUser(data.user);
@@ -51,7 +53,7 @@ function App() {
             onBack={() => setView('home')}
             token={user?.access_token}
             onAnalyze={(result) => {
-              console.log('Classify result:', result);
+              setAnalysisData(result);
               setView('results');
             }}
           />
@@ -59,6 +61,7 @@ function App() {
       case 'results':
         return (
           <Results
+            data={analysisData}
             onBackToForm={() => setView('shortlisting')}
             onBackToHome={() => setView('home')}
           />
