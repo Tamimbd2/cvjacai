@@ -281,3 +281,32 @@
     font-size: 0.88rem;
     margin-bottom: 4px;
 }
+
+/* Skill chips rendered from markdown tables */
+.skills-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 6px 0 14px 0;
+}
+
+.skill-chip-row {
+    display: contents; /* makes row transparent so chips flow naturally */
+}
+
+.skill-chip {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+
+.skill-chip:empty {
+    display: none;
+}

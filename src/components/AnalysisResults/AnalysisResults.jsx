@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { 
   ArrowLeft, 
   Sparkles, 
@@ -10,6 +14,8 @@ import {
 } from 'lucide-react';
 
 function AnalysisResults({ onBack, onBackToHome, data }) {
+  const paperRef = useRef(null);
+
   // Fallback to demo data if nothing from API
   const resumeMarkdown = data?.optimized_resume_markdown || "";
   const engine = data?.optimization_engine || "AI Core";
@@ -19,30 +25,141 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
     window.print();
   };
 
-  const handleExport = (format) => {
-    alert(`Exporting as ${format}... This feature will be available in the next update. Using "Print to PDF" for now is recommended.`);
+  const handleExportPNG = async () => {
+    if (!paperRef.current) return;
+    try {
+      const canvas = await html2canvas(paperRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      canvas.toBlob((blob) => {
+        saveAs(blob, 'optimized-resume.png');
+      }, 'image/png');
+    } catch (err) {
+      alert('PNG export failed: ' + err.message);
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    if (!resumeMarkdown) return;
+
+    // Parse markdown lines into docx paragraphs
+    const lines = resumeMarkdown.split('\n');
+    const docParagraphs = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        docParagraphs.push(new Paragraph({ text: '' }));
+        continue;
+      }
+      if (trimmed.startsWith('# ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_1,
+        }));
+      } else if (trimmed.startsWith('## ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_2,
+        }));
+      } else if (trimmed.startsWith('### ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_3,
+        }));
+      } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+        docParagraphs.push(new Paragraph({
+          bullet: { level: 0 },
+          children: [new TextRun(trimmed.replace(/^[*\-]\s*/, '').replace(/\*\*/g, '').replace(/\*/g, ''))],
+        }));
+      } else if (trimmed.startsWith('  * ') || trimmed.startsWith('  - ')) {
+        docParagraphs.push(new Paragraph({
+          bullet: { level: 1 },
+          children: [new TextRun(trimmed.replace(/^\s*[*\-]\s*/, '').replace(/\*\*/g, '').replace(/\*/g, ''))],
+        }));
+      } else {
+        // Strip markdown bold/italic
+        const cleanText = trimmed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/^#+\s*/, '');
+        docParagraphs.push(new Paragraph({
+          children: [new TextRun(cleanText)],
+        }));
+      }
+    }
+
+    const doc = new Document({
+      sections: [{ properties: {}, children: docParagraphs }],
+    });
+
+    try {
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, 'optimized-resume.docx');
+    } catch (err) {
+      alert('DOCX export failed: ' + err.message);
+    }
   };
 
   return (
     <div className="analysis-results-screen">
       <style>{`
         @media print {
-          .analysis-results-screen .container > :not(.resume-paper-container),
-          .analysis-results-screen .results-footer,
-          .analysis-results-screen .back-link,
-          .analysis-results-screen .logo,
-          .export-actions {
+          /* Reset everything to white */
+          * { 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body, html {
+            background: white !important;
+            color: black !important;
+          }
+          /* Hide all app chrome */
+          .app-container > * {
             display: none !important;
           }
-          .analysis-results-screen {
-            padding: 0 !important;
+          /* Only show the analysis results screen */
+          .app-container > .analysis-results-screen {
+            display: block !important;
             background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
+          /* Inside the screen, hide everything except the paper */
+          .analysis-results-screen > * {
+            display: none !important;
+          }
+          .analysis-results-screen > .container {
+            display: block !important;
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+          }
+          .container > * {
+            display: none !important;
+          }
+          .container > .resume-paper-container {
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+          }
+          /* Paper itself */
           .resume-paper {
             box-shadow: none !important;
+            border: none !important;
             margin: 0 !important;
+            padding: 30px 40px !important;
             width: 100% !important;
-            padding: 0 !important;
+            max-width: 100% !important;
+            border-top: 4px solid #1e40af !important;
+            background: white !important;
+          }
+          /* Skill chips stay readable */
+          .skill-chip {
+            border: 1px solid #bfdbfe !important;
+            background: #eff6ff !important;
+            color: #1e40af !important;
           }
         }
       `}</style>
@@ -81,21 +198,21 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
             <Printer size={18} />
             Print to PDF
           </button>
-          <button className="btn-action" onClick={() => handleExport('DOCX')}>
+          <button className="btn-action" onClick={handleExportDOCX}>
             <FileText size={18} />
             Download DOCX
           </button>
-          <button className="btn-action" onClick={() => handleExport('PNG')}>
+          <button className="btn-action" onClick={handleExportPNG}>
             <ImageIcon size={18} />
             Export PNG
           </button>
         </div>
 
-        <div className="resume-paper-container" style={{ paddingBottom: '60px' }}>
-          <div className="resume-paper" style={{
+        <div className="resume-paper-container" style={{ paddingBottom: '20px' }}>
+          <div ref={paperRef} className="resume-paper" style={{
             background: '#ffffff',
             color: '#1a202c',
-            padding: '60px 70px',
+            padding: '60px 70px 40px 70px',
             borderRadius: '2px',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 20px 60px -15px rgba(0,0,0,0.4)',
             width: '100%',
@@ -108,21 +225,37 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
             position: 'relative'
           }}>
             <div className="markdown-content">
-              <ReactMarkdown>{resumeMarkdown}</ReactMarkdown>
-            </div>
-            
-            <div style={{ 
-              marginTop: '50px', 
-              paddingTop: '20px', 
-              borderTop: '1px dashed #e2e8f0',
-              fontSize: '11px',
-              color: '#a0aec0',
-              textAlign: 'center',
-              fontStyle: 'italic'
-            }}>
-              {disclaimer}
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  td: ({children}) => (
+                    <span className="skill-chip">{children}</span>
+                  ),
+                  tr: ({children}) => (
+                    <span className="skill-chip-row">{children}</span>
+                  ),
+                  table: ({children}) => (
+                    <div className="skills-chip-container">{children}</div>
+                  ),
+                  thead: ({children}) => null,
+                  tbody: ({children}) => <>{children}</>,
+                }}
+              >{resumeMarkdown}</ReactMarkdown>
             </div>
           </div>
+
+          {/* Disclaimer outside paper so it doesn't add extra print page */}
+          <p style={{ 
+            maxWidth: '860px',
+            margin: '12px auto 0',
+            padding: '10px 0',
+            fontSize: '11px',
+            color: 'rgba(255,255,255,0.35)',
+            textAlign: 'center',
+            fontStyle: 'italic'
+          }}>
+            {disclaimer}
+          </p>
         </div>
 
         <div className="results-footer">
