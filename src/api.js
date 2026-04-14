@@ -27,11 +27,14 @@ export const authApi = {
 };
 
 export const resumeApi = {
-  shortlist: async (formData) => {
-    // formData should contain: job_circular, resume_files (file), top_k, skills, min_experience
-    const response = await fetch(`${BASE_URL}/classify`, { // Based on the root JSON I saw earlier: POST /api/classify
+  classify: async (formData, token) => {
+    // formData contains: job_circular, resume_files (file), top_k, skills, min_experience
+    const response = await fetch(`${BASE_URL}/classify`, {
       method: 'POST',
-      body: formData, // No Content-Type header needed for FormData; browser sets it with boundary
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
     });
     return response.json();
   },

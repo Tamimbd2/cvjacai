@@ -49,8 +49,9 @@ function App() {
         return (
           <Shortlisting
             onBack={() => setView('home')}
-            onAnalyze={(formData) => {
-              console.log('Analyzing with data:', formData);
+            token={user?.access_token}
+            onAnalyze={(result) => {
+              console.log('Classify result:', result);
               setView('results');
             }}
           />

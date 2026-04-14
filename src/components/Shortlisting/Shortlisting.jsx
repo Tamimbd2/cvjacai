@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, Upload } from 'lucide-react';
+import { resumeApi } from '../../api';
 
-function Shortlisting({ onBack, onAnalyze }) {
+function Shortlisting({ onBack, onAnalyze, token }) {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
     job_circular: '',
     skills: '',
@@ -19,13 +21,31 @@ function Shortlisting({ onBack, onAnalyze }) {
     setFormData(prev => ({ ...prev, resume_files: e.target.files[0] }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.resume_files) {
       alert("Please upload at least one resume file.");
       return;
     }
-    onAnalyze(formData);
+
+    setIsAnalyzing(true);
+    try {
+      const data = new FormData();
+      data.append("job_circular", formData.job_circular);
+      data.append("resume_files", formData.resume_files);
+      data.append("top_k", formData.top_k);
+      data.append("skills", formData.skills);
+      data.append("min_experience", formData.min_experience);
+
+      const result = await resumeApi.classify(data, token);
+      console.log('Analysis Result:', result);
+      onAnalyze(result);
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      alert('Analysis failed: ' + error.message);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -59,6 +79,7 @@ function Shortlisting({ onBack, onAnalyze }) {
               required
               value={formData.job_circular}
               onChange={handleInput}
+              disabled={isAnalyzing}
             ></textarea>
           </div>
 
@@ -72,6 +93,7 @@ function Shortlisting({ onBack, onAnalyze }) {
               required
               value={formData.skills}
               onChange={handleInput}
+              disabled={isAnalyzing}
             />
           </div>
 
@@ -87,6 +109,7 @@ function Shortlisting({ onBack, onAnalyze }) {
                 required
                 value={formData.min_experience}
                 onChange={handleInput}
+                disabled={isAnalyzing}
               />
             </div>
             <div className="form-group">
@@ -100,6 +123,7 @@ function Shortlisting({ onBack, onAnalyze }) {
                 required
                 value={formData.top_k}
                 onChange={handleInput}
+                disabled={isAnalyzing}
               />
             </div>
           </div>
@@ -112,11 +136,16 @@ function Shortlisting({ onBack, onAnalyze }) {
               style={{ display: 'none' }} 
               onChange={handleFile}
               accept=".zip,.pdf,.docx"
+              disabled={isAnalyzing}
             />
             <div 
               className="upload-area" 
-              onClick={() => document.getElementById('resume-upload').click()}
-              style={{ border: formData.resume_files ? '2px solid var(--accent-cyan)' : '' }}
+              onClick={() => !isAnalyzing && document.getElementById('resume-upload').click()}
+              style={{ 
+                border: formData.resume_files ? '2px solid var(--accent-cyan)' : '',
+                opacity: isAnalyzing ? 0.6 : 1,
+                cursor: isAnalyzing ? 'not-allowed' : 'pointer'
+              }}
             >
               <div className="upload-icon">
                 <Upload size={24} />
@@ -126,7 +155,16 @@ function Shortlisting({ onBack, onAnalyze }) {
             </div>
           </div>
 
-          <button type="submit" className="btn-submit">Analyze Resumes</button>
+          <button type="submit" className="btn-submit" disabled={isAnalyzing}>
+            {isAnalyzing ? (
+              <span className="loader-container">
+                <span className="loader"></span>
+                Analyzing...
+              </span>
+            ) : (
+              'Analyze Resumes'
+            )}
+          </button>
         </form>
       </div>
     </div>
