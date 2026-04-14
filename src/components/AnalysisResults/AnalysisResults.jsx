@@ -93,17 +93,19 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
 
         <div className="resume-paper-container" style={{ paddingBottom: '60px' }}>
           <div className="resume-paper" style={{
-            background: 'white',
+            background: '#ffffff',
             color: '#1a202c',
-            padding: '50px 60px',
-            borderRadius: '4px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            padding: '60px 70px',
+            borderRadius: '2px',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 20px 60px -15px rgba(0,0,0,0.4)',
             width: '100%',
-            maxWidth: '850px',
+            maxWidth: '860px',
             margin: '0 auto',
             textAlign: 'left',
             lineHeight: '1.6',
-            fontFamily: "'Inter', 'Segoe UI', sans-serif"
+            fontFamily: "'Georgia', serif",
+            borderTop: '5px solid #1e40af',
+            position: 'relative'
           }}>
             <div className="markdown-content">
               <ReactMarkdown>{resumeMarkdown}</ReactMarkdown>
