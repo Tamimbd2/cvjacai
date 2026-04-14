@@ -87,13 +87,12 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
           </div>
 
           <div className="form-group">
-            <label>Must-Have Skills</label>
+            <label>Must-Have Skills (Optional)</label>
             <input 
               type="text" 
               name="skills"
               className="form-control" 
               placeholder="e.g. React, Node.js, Python (comma separated)" 
-              required
               value={formData.skills}
               onChange={handleInput}
               disabled={isAnalyzing}
@@ -102,21 +101,20 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Minimum Experience (Years)</label>
+              <label>Minimum Experience (Optional)</label>
               <input 
                 type="number" 
                 name="min_experience"
                 className="form-control" 
                 placeholder="e.g. 2" 
                 min="0"
-                required
                 value={formData.min_experience}
                 onChange={handleInput}
                 disabled={isAnalyzing}
               />
             </div>
             <div className="form-group">
-              <label>Top Candidates to Scan (Top K)</label>
+              <label>Top Candidates to Scan</label>
               <input 
                 type="number" 
                 name="top_k"
