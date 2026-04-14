@@ -17,7 +17,12 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
   const paperRef = useRef(null);
 
   // Fallback to demo data if nothing from API
-  const resumeMarkdown = data?.optimized_resume_markdown || "";
+  const rawMarkdown = data?.optimized_resume_markdown || "";
+  // Strip outdated "References available upon request" line
+  const resumeMarkdown = rawMarkdown
+    .split('\n')
+    .filter(line => !/references available upon request/i.test(line))
+    .join('\n');
   const engine = data?.optimization_engine || "AI Core";
   const disclaimer = data?.disclaimer || "Please review for accuracy.";
 
@@ -184,7 +189,7 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
             Optimization Ready
           </div>
           <h1>Optimized ATS Resume</h1>
-          <p className="section-subtitle">Tailored by {engine} for maximum impact</p>
+          <p className="section-subtitle">Powered by High-Performance Trained AI</p>
         </div>
 
         <div className="export-actions" style={{ 
