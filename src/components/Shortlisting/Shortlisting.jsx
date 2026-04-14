@@ -36,9 +36,9 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
       const data = new FormData();
       data.append("job_circular", formData.job_circular);
       data.append("resume_files", formData.resume_files);
-      data.append("top_k", formData.top_k);
-      data.append("skills", formData.skills);
-      data.append("min_experience", formData.min_experience);
+      data.append("top_k", formData.top_k || "5");
+      data.append("skills", formData.skills || "");
+      data.append("min_experience", formData.min_experience || "0");
 
       const result = await resumeApi.classify(data, token);
       console.log('Analysis Result:', result);

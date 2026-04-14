@@ -73,16 +73,6 @@ function App() {
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.1rem', maxWidth: '500px' }}>
               Our neural networks are scanning for the best matches based on your criteria. This usually takes a few seconds.
             </p>
-            <div className="progress-bar-container" style={{ 
-              width: '300px', 
-              height: '4px', 
-              background: 'rgba(255,255,255,0.1)', 
-              borderRadius: '2px', 
-              marginTop: '40px',
-              overflow: 'hidden'
-            }}>
-              <div className="progress-bar-fill"></div>
-            </div>
           </div>
         );
       case 'shortlisting':
