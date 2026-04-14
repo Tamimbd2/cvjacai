@@ -38,4 +38,16 @@ export const resumeApi = {
     });
     return response.json();
   },
+
+  optimize: async (formData, token) => {
+    // formData contains: resume_file (file), job_description (text, optional)
+    const response = await fetch(`${BASE_URL}/optimize`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
+    });
+    return response.json();
+  },
 };

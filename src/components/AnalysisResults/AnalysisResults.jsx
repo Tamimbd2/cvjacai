@@ -1,36 +1,174 @@
-import React from 'react';
-import {
-  ArrowLeft,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  TrendingUp,
-  Briefcase,
-  Lightbulb
+import React, { useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Printer, 
+  FileText, 
+  Image as ImageIcon,
+  CheckCircle2
 } from 'lucide-react';
 
-function AnalysisResults({ onBack, onBackToHome }) {
-  const jobs = [
-    { title: "Senior Frontend Developer", match: "92%" },
-    { title: "Full Stack Engineer", match: "88%" },
-    { title: "React Developer", match: "85%" },
-  ];
+function AnalysisResults({ onBack, onBackToHome, data }) {
+  const paperRef = useRef(null);
 
-  const improvements = [
-    { title: "Add Quantifiable Achievements", priority: "HIGH", description: "Include specific metrics and results from your previous roles (e.g., 'Increased user engagement by 45%').", icon: <AlertCircle size={20} color="#EF4444" />, prioClass: "prio-high" },
-    { title: "Highlight Technical Skills", priority: "HIGH", description: "Add more technical keywords related to modern frameworks and tools in your field.", icon: <AlertCircle size={20} color="#EF4444" />, prioClass: "prio-high" },
-    { title: "Improve Summary Section", priority: "MEDIUM", description: "Create a compelling professional summary that highlights your unique value proposition.", icon: <TrendingUp size={20} color="#F59E0B" />, prioClass: "prio-med" },
-    { title: "Add Certifications", priority: "MEDIUM", description: "Include relevant certifications to boost credibility (AWS, Azure, Google Cloud, etc.)", icon: <TrendingUp size={20} color="#F59E0B" />, prioClass: "prio-med" },
-    { title: "Update Format", priority: "LOW", description: "Use a cleaner, more modern layout with better spacing and visual hierarchy.", icon: <CheckCircle2 size={20} color="#3B82F6" />, prioClass: "prio-low" },
-  ];
+  // Fallback to demo data if nothing from API
+  const resumeMarkdown = data?.optimized_resume_markdown || "";
+  const engine = data?.optimization_engine || "AI Core";
+  const disclaimer = data?.disclaimer || "Please review for accuracy.";
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExportPNG = async () => {
+    if (!paperRef.current) return;
+    try {
+      const canvas = await html2canvas(paperRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      canvas.toBlob((blob) => {
+        saveAs(blob, 'optimized-resume.png');
+      }, 'image/png');
+    } catch (err) {
+      alert('PNG export failed: ' + err.message);
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    if (!resumeMarkdown) return;
+
+    // Parse markdown lines into docx paragraphs
+    const lines = resumeMarkdown.split('\n');
+    const docParagraphs = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        docParagraphs.push(new Paragraph({ text: '' }));
+        continue;
+      }
+      if (trimmed.startsWith('# ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_1,
+        }));
+      } else if (trimmed.startsWith('## ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_2,
+        }));
+      } else if (trimmed.startsWith('### ')) {
+        docParagraphs.push(new Paragraph({
+          text: trimmed.replace(/^#+\s*/, '').replace(/\*\*/g, ''),
+          heading: HeadingLevel.HEADING_3,
+        }));
+      } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+        docParagraphs.push(new Paragraph({
+          bullet: { level: 0 },
+          children: [new TextRun(trimmed.replace(/^[*\-]\s*/, '').replace(/\*\*/g, '').replace(/\*/g, ''))],
+        }));
+      } else if (trimmed.startsWith('  * ') || trimmed.startsWith('  - ')) {
+        docParagraphs.push(new Paragraph({
+          bullet: { level: 1 },
+          children: [new TextRun(trimmed.replace(/^\s*[*\-]\s*/, '').replace(/\*\*/g, '').replace(/\*/g, ''))],
+        }));
+      } else {
+        // Strip markdown bold/italic
+        const cleanText = trimmed.replace(/\*\*/g, '').replace(/\*/g, '').replace(/^#+\s*/, '');
+        docParagraphs.push(new Paragraph({
+          children: [new TextRun(cleanText)],
+        }));
+      }
+    }
+
+    const doc = new Document({
+      sections: [{ properties: {}, children: docParagraphs }],
+    });
+
+    try {
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, 'optimized-resume.docx');
+    } catch (err) {
+      alert('DOCX export failed: ' + err.message);
+    }
+  };
 
   return (
     <div className="analysis-results-screen">
+      <style>{`
+        @media print {
+          /* Reset everything to white */
+          * { 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body, html {
+            background: white !important;
+            color: black !important;
+          }
+          /* Hide all app chrome */
+          .app-container > * {
+            display: none !important;
+          }
+          /* Only show the analysis results screen */
+          .app-container > .analysis-results-screen {
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          /* Inside the screen, hide everything except the paper */
+          .analysis-results-screen > * {
+            display: none !important;
+          }
+          .analysis-results-screen > .container {
+            display: block !important;
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+          }
+          .container > * {
+            display: none !important;
+          }
+          .container > .resume-paper-container {
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+          }
+          /* Paper itself */
+          .resume-paper {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 30px 40px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-top: 4px solid #1e40af !important;
+            background: white !important;
+          }
+          /* Skill chips stay readable */
+          .skill-chip {
+            border: 1px solid #bfdbfe !important;
+            background: #eff6ff !important;
+            color: #1e40af !important;
+          }
+        }
+      `}</style>
+
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <a href="#" onClick={(e) => { e.preventDefault(); onBack(); }} className="back-link">
             <ArrowLeft size={18} />
-            Back
+            Back to Editor
           </a>
           <div className="logo" onClick={onBackToHome}>
             <div className="logo-icon">
@@ -43,77 +181,86 @@ function AnalysisResults({ onBack, onBackToHome }) {
         <div className="results-header">
           <div className="badge">
             <CheckCircle2 className="badge-icon" />
-            Analysis Complete
+            Optimization Ready
           </div>
-          <h1>Your CV Analysis</h1>
-          <p className="section-subtitle">AI-powered insights to improve your resume</p>
+          <h1>Optimized ATS Resume</h1>
+          <p className="section-subtitle">Tailored by {engine} for maximum impact</p>
         </div>
 
-        <div className="form-container">
-          <div className="analysis-score-card">
-            <div className="score-display">
-              <span className="score-value">78%</span>
-              <span className="score-label">CV Score</span>
-            </div>
-            <div className="score-info">
-              <h2>Good CV, Room for Improvement</h2>
-              <p>Your CV shows solid experience and skills, but there are several areas where you can enhance it to stand out more to recruiters and AI screening systems.</p>
-              <div className="tag-row">
-                <span className="status-tag tag-green">Well Structured</span>
-                <span className="status-tag tag-yellow">Needs Keywords</span>
-                <span className="status-tag tag-blue">ATS Compatible</span>
-              </div>
+        <div className="export-actions" style={{ 
+          display: 'flex', 
+          gap: '15px', 
+          marginBottom: '30px',
+          justifyContent: 'center',
+          flexWrap: 'wrap'
+        }}>
+          <button className="btn-action" onClick={handlePrint}>
+            <Printer size={18} />
+            Print to PDF
+          </button>
+          <button className="btn-action" onClick={handleExportDOCX}>
+            <FileText size={18} />
+            Download DOCX
+          </button>
+          <button className="btn-action" onClick={handleExportPNG}>
+            <ImageIcon size={18} />
+            Export PNG
+          </button>
+        </div>
+
+        <div className="resume-paper-container" style={{ paddingBottom: '20px' }}>
+          <div ref={paperRef} className="resume-paper" style={{
+            background: '#ffffff',
+            color: '#1a202c',
+            padding: '60px 70px 40px 70px',
+            borderRadius: '2px',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 20px 60px -15px rgba(0,0,0,0.4)',
+            width: '100%',
+            maxWidth: '860px',
+            margin: '0 auto',
+            textAlign: 'left',
+            lineHeight: '1.6',
+            fontFamily: "'Georgia', serif",
+            borderTop: '5px solid #1e40af',
+            position: 'relative'
+          }}>
+            <div className="markdown-content">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  td: ({children}) => (
+                    <span className="skill-chip">{children}</span>
+                  ),
+                  tr: ({children}) => (
+                    <span className="skill-chip-row">{children}</span>
+                  ),
+                  table: ({children}) => (
+                    <div className="skills-chip-container">{children}</div>
+                  ),
+                  thead: ({children}) => null,
+                  tbody: ({children}) => <>{children}</>,
+                }}
+              >{resumeMarkdown}</ReactMarkdown>
             </div>
           </div>
 
-          <div className="analysis-section">
-            <div className="section-title-row">
-              <div className="icon-box">
-                <Briefcase size={20} />
-              </div>
-              Best Suited Jobs
-            </div>
-            <div className="job-list">
-              {jobs.map((job, i) => (
-                <div key={i} className="job-item">
-                  <div className="job-rank">{i + 1}</div>
-                  <div className="job-info">
-                    <h4>{job.title}</h4>
-                    <p>Based on your skills and experience</p>
-                  </div>
-                  <div className="job-match">{job.match}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Disclaimer outside paper so it doesn't add extra print page */}
+          <p style={{ 
+            maxWidth: '860px',
+            margin: '12px auto 0',
+            padding: '10px 0',
+            fontSize: '11px',
+            color: 'rgba(255,255,255,0.35)',
+            textAlign: 'center',
+            fontStyle: 'italic'
+          }}>
+            {disclaimer}
+          </p>
+        </div>
 
-          <div className="analysis-section">
-            <div className="section-title-row">
-              <div className="icon-box">
-                <Lightbulb size={20} />
-              </div>
-              Recommended Improvements
-            </div>
-            <div className="improvement-list">
-              {improvements.map((imp, i) => (
-                <div key={i} className="improvement-item">
-                  <div className="imp-icon">{imp.icon}</div>
-                  <div className="imp-content">
-                    <h4>
-                      {imp.title}
-                      <span className={`priority-badge ${imp.prioClass}`}>{imp.priority}</span>
-                    </h4>
-                    <p>{imp.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="results-footer">
-            <button className="btn-outline" onClick={onBack}>Analyze Another CV</button>
-            <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
-          </div>
+        <div className="results-footer">
+          <button className="btn-outline" onClick={onBack}>Optimize Another</button>
+          <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
         </div>
       </div>
     </div>
