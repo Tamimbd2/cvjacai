@@ -24,8 +24,9 @@ function App() {
   const [analysisData, setAnalysisData] = useState(null);
 
   const handleLogin = (data) => {
+    console.log('Login successful, received data:', data);
     setIsLoggedIn(true);
-    setUser(data); // Store the full data object which includes access, refresh, and user
+    setUser(data);
     localStorage.setItem('cvjachai_user', JSON.stringify(data));
     setView('home');
   };
@@ -88,7 +89,7 @@ function App() {
         return (
           <Shortlisting
             onBack={() => setView('home')}
-            token={user?.access}
+            token={user?.access || user?.access_token || user?.token}
             onStartAnalysis={() => setView('analyzing')}
             onAnalyze={(result) => {
               setAnalysisData(result);
