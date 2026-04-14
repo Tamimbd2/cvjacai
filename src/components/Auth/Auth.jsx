@@ -5,7 +5,8 @@ import { authApi } from '../../api';
 function Auth({ mode, onToggleMode, onSuccess, onBack }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,37 +20,79 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
     }
   }, []);
 
+  const validateForm = () => {
+    if (mode === 'signup') {
+      if (!firstName.trim()) {
+        setError('First name is required');
+        return false;
+      }
+      if (!lastName.trim()) {
+        setError('Last name is required');
+        return false;
+      }
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setIsLoading(true);
     setError('');
 
     try {
+      console.log('Attempting Auth with:', { mode, email, firstName, lastName });
+      
       let data;
       if (mode === 'login') {
         data = await authApi.signin(email, password);
       } else {
-        data = await authApi.signup(name, email, password);
+        data = await authApi.signup(firstName, lastName, email, password);
       }
 
-      // Check if data is valid (api.js returns response.json())
-      if (data && !data.error && !data.message?.toLowerCase().includes('failed')) {
-        if (rememberMe) {
-          localStorage.setItem('cvjachai_remembered_email', email);
+      console.log('Auth API Response:', data);
+
+      // Enhanced success check for both login (access/token) and signup (message/user)
+      const isSignupSuccess = mode === 'signup' && (data.message?.toLowerCase().includes('success') || data.user);
+      const isLoginSuccess = mode === 'login' && (data.access || data.token || data.refresh);
+
+      if (data && (isLoginSuccess || isSignupSuccess || data.status === 'success')) {
+        if (mode === 'signup') {
+          // If it was a signup, show success message and switch to login mode
+          setError(''); // Clear any previous errors
+          alert('Registration successful! Please login with your credentials.');
+          onToggleMode(); // Switch to login screen
         } else {
-          localStorage.removeItem('cvjachai_remembered_email');
+          // If it was a login, proceed as normal
+          if (rememberMe) {
+            localStorage.setItem('cvjachai_remembered_email', email);
+          } else {
+            localStorage.removeItem('cvjachai_remembered_email');
+          }
+          onSuccess(data);
         }
-        onSuccess(data);
       } else {
-        setError(data.message || 'Authentication failed. Please check your credentials.');
+        // More robust error message extraction
+        const errorMsg = data.msg || data.message || data.detail || data.error || (typeof data === 'string' ? data : null) || 'Authentication failed. Please check your credentials.';
+        setError(String(errorMsg));
       }
     } catch (err) {
-      console.error('Login Error Deep Dive:', {
-        message: err.message,
-        stack: err.stack,
-        hint: 'If this works in Postman but not here, it is likely a CORS issue. The backend must allow your origin.'
-      });
-      setError(`Connection error: ${err.message}. Please check CORS settings on the backend.`);
+      console.error('Auth Request Error:', err);
+      setError('Unable to connect to the server. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -69,18 +112,34 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
             <form className="auth-form-fields" onSubmit={handleSubmit}>
               {error && <div className="auth-error-message">{error}</div>}
               {mode === 'signup' && (
-                <div className="form-group-modern">
-                  <label>Full Name</label>
-                  <div className="input-box">
-                    <Users size={18} className="input-icon-left" />
-                    <input
-                      type="text"
-                      placeholder="Enter your name"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      disabled={isLoading}
-                    />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div className="form-group-modern">
+                    <label>First Name</label>
+                    <div className="input-box">
+                      <Users size={18} className="input-icon-left" />
+                      <input
+                        type="text"
+                        placeholder="John"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group-modern">
+                    <label>Last Name</label>
+                    <div className="input-box">
+                      <Users size={18} className="input-icon-left" />
+                      <input
+                        type="text"
+                        placeholder="Doe"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -134,7 +193,6 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
                   <span className="checkmark"></span>
                   Remember me
                 </label>
-                <a href="#" className="forgot-link" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
               </div>
 
               <button type="submit" className="btn-login-gradient" disabled={isLoading}>
