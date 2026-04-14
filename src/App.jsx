@@ -676,8 +676,8 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
     try {
       const endpoint = mode === 'login' 
-        ? '/api/auth/signin/' 
-        : '/api/auth/signup/';
+        ? '/api/auth/signin' 
+        : '/api/auth/signup';
 
       const body = mode === 'login' 
         ? { email, password } 
