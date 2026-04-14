@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Home from './components/Home/Home';
 import Shortlisting from './components/Shortlisting/Shortlisting';
 import Results from './components/Results/Results';
@@ -12,15 +12,25 @@ function App() {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem('cvjachai_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   const handleLogin = (data) => {
     setIsLoggedIn(true);
     setUser(data.user);
+    localStorage.setItem('cvjachai_user', JSON.stringify(data.user));
     setView('home');
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUser(null);
+    localStorage.removeItem('cvjachai_user');
     setView('home');
   };
 

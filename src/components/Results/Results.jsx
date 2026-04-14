@@ -12,60 +12,62 @@ function Results({ onBackToForm, onBackToHome }) {
 
   return (
     <div className="results-screen">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <a href="#" onClick={(e) => { e.preventDefault(); onBackToForm(); }} className="back-link">
-          <ArrowLeft size={18} />
-          Back to Form
-        </a>
-        <div className="logo" onClick={onBackToHome}>
-          <div className="logo-icon">
-            <Sparkles size={18} color="white" fill="white" />
-          </div>
-          <span>CVJACHAI</span>
-        </div>
-      </div>
-
-      <div className="results-header">
-        <div className="badge">
-          <CheckCircle2 className="badge-icon" />
-          Analysis Complete
-        </div>
-        <h1>Top 5 Candidates</h1>
-        <p className="section-subtitle">Ranked by AI match score</p>
-      </div>
-
-      <div className="candidates-list">
-        {candidates.map((c, i) => (
-          <div key={i} className="candidate-card">
-            <div className="candidate-pct">
-              <div className="candidate-icon" style={{ backgroundColor: c.iconBg, margin: '0 auto 10px' }}>
-                {c.icon}
-              </div>
-              <span className="pct-value">{c.score}</span>
-              <span className="pct-label">Match</span>
+      <div className="container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); onBackToForm(); }} className="back-link">
+            <ArrowLeft size={18} />
+            Back to Form
+          </a>
+          <div className="logo" onClick={onBackToHome}>
+            <div className="logo-icon">
+              <Sparkles size={18} color="white" fill="white" />
             </div>
-            <div className="candidate-info">
-              <h3>{c.name}</h3>
-              <div className="candidate-meta">
-                <span>{c.email}</span>
-                <span>•</span>
-                <span>{c.exp}</span>
-              </div>
-              <div className="candidate-skills">
-                <strong>Skills Found: </strong> {c.skills}
-              </div>
-            </div>
-            <button className="btn-download">
-              <Download size={18} />
-              Download PDF
-            </button>
+            <span>CVJACHAI</span>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="results-footer">
-        <button className="btn-outline" onClick={onBackToForm}>New Analysis</button>
-        <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
+        <div className="results-header">
+          <div className="badge">
+            <CheckCircle2 className="badge-icon" />
+            Analysis Complete
+          </div>
+          <h1>Top 5 Candidates</h1>
+          <p className="section-subtitle">Ranked by AI match score</p>
+        </div>
+
+        <div className="candidates-list">
+          {candidates.map((c, i) => (
+            <div key={i} className="candidate-card">
+              <div className="candidate-pct">
+                <div className="candidate-icon" style={{ backgroundColor: c.iconBg, margin: '0 auto 10px' }}>
+                  {c.icon}
+                </div>
+                <span className="pct-value">{c.score}</span>
+                <span className="pct-label">Match</span>
+              </div>
+              <div className="candidate-info">
+                <h3>{c.name}</h3>
+                <div className="candidate-meta">
+                  <span>{c.email}</span>
+                  <span>•</span>
+                  <span>{c.exp}</span>
+                </div>
+                <div className="candidate-skills">
+                  <strong>Skills Found: </strong> {c.skills}
+                </div>
+              </div>
+              <button className="btn-download">
+                <Download size={18} />
+                Download PDF
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="results-footer">
+          <button className="btn-outline" onClick={onBackToForm}>New Analysis</button>
+          <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
+        </div>
       </div>
     </div>
   );

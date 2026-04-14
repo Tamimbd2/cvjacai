@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Mail, ShieldCheck, Eye, EyeOff, FileText, Zap } from 'lucide-react';
 import { authApi } from '../../api';
 
@@ -9,6 +9,15 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('cvjachai_remembered_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,6 +34,11 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
       // Check if data is valid (api.js returns response.json())
       if (data && !data.error && !data.message?.toLowerCase().includes('failed')) {
+        if (rememberMe) {
+          localStorage.setItem('cvjachai_remembered_email', email);
+        } else {
+          localStorage.removeItem('cvjachai_remembered_email');
+        }
         onSuccess(data);
       } else {
         setError(data.message || 'Authentication failed. Please check your credentials.');
@@ -111,7 +125,12 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
               <div className="form-options">
                 <label className="checkbox-container">
-                  <input type="checkbox" disabled={isLoading} />
+                  <input 
+                    type="checkbox" 
+                    disabled={isLoading} 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
                   <span className="checkmark"></span>
                   Remember me
                 </label>
@@ -185,15 +204,17 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
       </div>
 
       <footer className="auth-footer-modern">
-        <div className="footer-left-modern">
-          <span className="footer-brand-name">CVJACHAI</span>
-          <span className="copyright">© 2026 CVJACHAI. Architecting the future of recruitment.</span>
-        </div>
-        <div className="footer-right-modern">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Security</a>
-          <a href="#">Status</a>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="footer-left-modern">
+            <span className="footer-brand-name">CVJACHAI</span>
+            <span className="copyright">© 2026 CVJACHAI. Architecting the future of recruitment.</span>
+          </div>
+          <div className="footer-right-modern">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Security</a>
+            <a href="#">Status</a>
+          </div>
         </div>
       </footer>
     </div>
