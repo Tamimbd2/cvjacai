@@ -1,4 +1,4 @@
-const BASE_URL = 'https://cvjachai-api.onrender.com/api';
+const BASE_URL = '/api';
 
 export const authApi = {
   signin: async (email, password) => {
