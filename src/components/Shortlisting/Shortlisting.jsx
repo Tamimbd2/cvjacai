@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, Upload } from 'lucide-react';
 import { resumeApi } from '../../api';
 
-function Shortlisting({ onBack, onAnalyze, token }) {
+function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
     job_circular: '',
@@ -28,7 +28,10 @@ function Shortlisting({ onBack, onAnalyze, token }) {
       return;
     }
 
+    console.log('Sending request with token:', token);
     setIsAnalyzing(true);
+    onStartAnalysis(); // Switch to the analyzing screen immediately
+
     try {
       const data = new FormData();
       data.append("job_circular", formData.job_circular);
