@@ -189,7 +189,7 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
             Optimization Ready
           </div>
           <h1>Optimized ATS Resume</h1>
-          <p className="section-subtitle">Powered by High-Performance Trained AI</p>
+          <p className="section-subtitle">Tailored by {engine} for maximum impact</p>
         </div>
 
         <div className="export-actions" style={{ 
