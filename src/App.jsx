@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react';
 import Home from './components/Home/Home';
 import Shortlisting from './components/Shortlisting/Shortlisting';
 import Results from './components/Results/Results';
-import Personalization from './components/Personalization/Personalization';
+import Optimization from './components/Optimization/Optimization';
 import AnalysisResults from './components/AnalysisResults/AnalysisResults';
 import Auth from './components/Auth/Auth';
 
@@ -97,18 +97,20 @@ function App() {
         );
       case 'personalization':
         return (
-          <Personalization
+          <Optimization
             onBack={() => setView('home')}
-            onAnalyze={() => {
-              setView('analyzing');
-              // Simulate API delay for personalization demo
-              setTimeout(() => setView('analysis_results'), 3000);
+            token={user?.access || user?.access_token || user?.token}
+            onStartAnalysis={() => setView('analyzing')}
+            onAnalyze={(result) => {
+              setAnalysisData(result);
+              setView('analysis_results');
             }}
           />
         );
       case 'analysis_results':
         return (
           <AnalysisResults
+            data={analysisData}
             onBack={() => setView('personalization')}
             onBackToHome={() => setView('home')}
           />

@@ -1,36 +1,59 @@
 import React from 'react';
-import {
-  ArrowLeft,
-  Sparkles,
+import ReactMarkdown from 'react-markdown';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Download, 
+  Printer, 
+  FileText, 
+  Image as ImageIcon,
   CheckCircle2,
-  AlertCircle,
-  TrendingUp,
-  Briefcase,
-  Lightbulb
+  AlertCircle
 } from 'lucide-react';
 
-function AnalysisResults({ onBack, onBackToHome }) {
-  const jobs = [
-    { title: "Senior Frontend Developer", match: "92%" },
-    { title: "Full Stack Engineer", match: "88%" },
-    { title: "React Developer", match: "85%" },
-  ];
+function AnalysisResults({ onBack, onBackToHome, data }) {
+  // Fallback to demo data if nothing from API
+  const resumeMarkdown = data?.optimized_resume_markdown || "";
+  const engine = data?.optimization_engine || "AI Core";
+  const disclaimer = data?.disclaimer || "Please review for accuracy.";
 
-  const improvements = [
-    { title: "Add Quantifiable Achievements", priority: "HIGH", description: "Include specific metrics and results from your previous roles (e.g., 'Increased user engagement by 45%').", icon: <AlertCircle size={20} color="#EF4444" />, prioClass: "prio-high" },
-    { title: "Highlight Technical Skills", priority: "HIGH", description: "Add more technical keywords related to modern frameworks and tools in your field.", icon: <AlertCircle size={20} color="#EF4444" />, prioClass: "prio-high" },
-    { title: "Improve Summary Section", priority: "MEDIUM", description: "Create a compelling professional summary that highlights your unique value proposition.", icon: <TrendingUp size={20} color="#F59E0B" />, prioClass: "prio-med" },
-    { title: "Add Certifications", priority: "MEDIUM", description: "Include relevant certifications to boost credibility (AWS, Azure, Google Cloud, etc.)", icon: <TrendingUp size={20} color="#F59E0B" />, prioClass: "prio-med" },
-    { title: "Update Format", priority: "LOW", description: "Use a cleaner, more modern layout with better spacing and visual hierarchy.", icon: <CheckCircle2 size={20} color="#3B82F6" />, prioClass: "prio-low" },
-  ];
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExport = (format) => {
+    alert(`Exporting as ${format}... This feature will be available in the next update. Using "Print to PDF" for now is recommended.`);
+  };
 
   return (
     <div className="analysis-results-screen">
+      <style>{`
+        @media print {
+          .analysis-results-screen .container > :not(.resume-paper-container),
+          .analysis-results-screen .results-footer,
+          .analysis-results-screen .back-link,
+          .analysis-results-screen .logo,
+          .export-actions {
+            display: none !important;
+          }
+          .analysis-results-screen {
+            padding: 0 !important;
+            background: white !important;
+          }
+          .resume-paper {
+            box-shadow: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
+
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <a href="#" onClick={(e) => { e.preventDefault(); onBack(); }} className="back-link">
             <ArrowLeft size={18} />
-            Back
+            Back to Editor
           </a>
           <div className="logo" onClick={onBackToHome}>
             <div className="logo-icon">
@@ -43,77 +66,68 @@ function AnalysisResults({ onBack, onBackToHome }) {
         <div className="results-header">
           <div className="badge">
             <CheckCircle2 className="badge-icon" />
-            Analysis Complete
+            Optimization Ready
           </div>
-          <h1>Your CV Analysis</h1>
-          <p className="section-subtitle">AI-powered insights to improve your resume</p>
+          <h1>Optimized ATS Resume</h1>
+          <p className="section-subtitle">Tailored by {engine} for maximum impact</p>
         </div>
 
-        <div className="form-container">
-          <div className="analysis-score-card">
-            <div className="score-display">
-              <span className="score-value">78%</span>
-              <span className="score-label">CV Score</span>
-            </div>
-            <div className="score-info">
-              <h2>Good CV, Room for Improvement</h2>
-              <p>Your CV shows solid experience and skills, but there are several areas where you can enhance it to stand out more to recruiters and AI screening systems.</p>
-              <div className="tag-row">
-                <span className="status-tag tag-green">Well Structured</span>
-                <span className="status-tag tag-yellow">Needs Keywords</span>
-                <span className="status-tag tag-blue">ATS Compatible</span>
-              </div>
-            </div>
-          </div>
+        <div className="export-actions" style={{ 
+          display: 'flex', 
+          gap: '15px', 
+          marginBottom: '30px',
+          justifyContent: 'center',
+          flexWrap: 'wrap'
+        }}>
+          <button className="btn-action" onClick={handlePrint}>
+            <Printer size={18} />
+            Print to PDF
+          </button>
+          <button className="btn-action" onClick={() => handleExport('DOCX')}>
+            <FileText size={18} />
+            Download DOCX
+          </button>
+          <button className="btn-action" onClick={() => handleExport('PNG')}>
+            <ImageIcon size={18} />
+            Export PNG
+          </button>
+        </div>
 
-          <div className="analysis-section">
-            <div className="section-title-row">
-              <div className="icon-box">
-                <Briefcase size={20} />
-              </div>
-              Best Suited Jobs
+        <div className="resume-paper-container" style={{ paddingBottom: '60px' }}>
+          <div className="resume-paper" style={{
+            background: 'white',
+            color: '#1a202c',
+            padding: '50px 60px',
+            borderRadius: '4px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            width: '100%',
+            maxWidth: '850px',
+            margin: '0 auto',
+            textAlign: 'left',
+            lineHeight: '1.6',
+            fontFamily: "'Inter', 'Segoe UI', sans-serif"
+          }}>
+            <div className="markdown-content">
+              <ReactMarkdown>{resumeMarkdown}</ReactMarkdown>
             </div>
-            <div className="job-list">
-              {jobs.map((job, i) => (
-                <div key={i} className="job-item">
-                  <div className="job-rank">{i + 1}</div>
-                  <div className="job-info">
-                    <h4>{job.title}</h4>
-                    <p>Based on your skills and experience</p>
-                  </div>
-                  <div className="job-match">{job.match}</div>
-                </div>
-              ))}
+            
+            <div style={{ 
+              marginTop: '50px', 
+              paddingTop: '20px', 
+              borderTop: '1px dashed #e2e8f0',
+              fontSize: '11px',
+              color: '#a0aec0',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }}>
+              {disclaimer}
             </div>
           </div>
+        </div>
 
-          <div className="analysis-section">
-            <div className="section-title-row">
-              <div className="icon-box">
-                <Lightbulb size={20} />
-              </div>
-              Recommended Improvements
-            </div>
-            <div className="improvement-list">
-              {improvements.map((imp, i) => (
-                <div key={i} className="improvement-item">
-                  <div className="imp-icon">{imp.icon}</div>
-                  <div className="imp-content">
-                    <h4>
-                      {imp.title}
-                      <span className={`priority-badge ${imp.prioClass}`}>{imp.priority}</span>
-                    </h4>
-                    <p>{imp.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="results-footer">
-            <button className="btn-outline" onClick={onBack}>Analyze Another CV</button>
-            <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
-          </div>
+        <div className="results-footer">
+          <button className="btn-outline" onClick={onBack}>Optimize Another</button>
+          <button className="btn-primary" onClick={onBackToHome} style={{ border: 'none', cursor: 'pointer' }}>Back to Home</button>
         </div>
       </div>
     </div>
