@@ -136,7 +136,7 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
               id="resume-upload" 
               style={{ display: 'none' }} 
               onChange={handleFile}
-              accept=".zip,.pdf,.docx"
+              accept=".zip,.pdf,.docx,.doc,.jpg,.jpeg,.png,.webp"
               disabled={isAnalyzing}
             />
             <div 
@@ -152,7 +152,7 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
                 <Upload size={24} />
               </div>
               <p>{formData.resume_files ? formData.resume_files.name : 'Click to upload or drag and drop'}</p>
-              <span>ZIP, PDF, or DOCX files</span>
+              <span>ZIP, PDF, DOCX, or image files</span>
             </div>
           </div>
 

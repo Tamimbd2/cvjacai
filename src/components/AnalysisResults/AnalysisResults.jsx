@@ -3,12 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, 
   Sparkles, 
-  Download, 
   Printer, 
   FileText, 
   Image as ImageIcon,
-  CheckCircle2,
-  AlertCircle
+  CheckCircle2
 } from 'lucide-react';
 
 function AnalysisResults({ onBack, onBackToHome, data }) {

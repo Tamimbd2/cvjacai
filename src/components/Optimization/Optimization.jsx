@@ -85,7 +85,7 @@ function Optimization({ onBack, onAnalyze, onStartAnalysis, token }) {
               id="resume-optimize-upload" 
               style={{ display: 'none' }} 
               onChange={handleFile}
-              accept=".pdf,.docx,.doc"
+              accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,.tiff,.tif"
               disabled={isAnalyzing}
             />
             <div 
@@ -102,7 +102,7 @@ function Optimization({ onBack, onAnalyze, onStartAnalysis, token }) {
                 <FileText size={32} />
               </div>
               <p>{formData.resume_file ? formData.resume_file.name : 'Click to upload your CV'}</p>
-              <span>PDF, DOCX, or Image files</span>
+              <span>PDF, DOCX, JPG, PNG, or other image files</span>
             </div>
           </div>
 
