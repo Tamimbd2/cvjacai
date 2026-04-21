@@ -26,20 +26,18 @@ function JobListing({ onBack }) {
         redirect: "follow"
       };
 
-      const apiUrl = "https://cvjachai-api.onrender.com/api/jobs/";
-      // Using AllOrigins proxy to bypass CORS during development
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-
-      console.log('Fetching from API via Proxy:', apiUrl);
-      const response = await fetch(proxyUrl, requestOptions);
+      const apiUrl = "/api/jobs/";
       
-      console.log('Proxy Response status:', response.status);
+      console.log('Fetching from API:', apiUrl);
+      const response = await fetch(apiUrl, requestOptions);
+      
+      console.log('Response status:', response.status);
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: Failed to fetch jobs via proxy`);
+        throw new Error(`Error ${response.status}: Failed to fetch jobs`);
       }
       
       const result = await response.json();
-      console.log('Fetched jobs result via proxy:', result);
+      console.log('Fetched jobs result:', result);
       
       // Ensure result is an array before setting state
       if (Array.isArray(result)) {
