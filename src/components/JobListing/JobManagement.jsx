@@ -79,22 +79,53 @@ function JobManagement({ onBack, onPostJob, token }) {
   const runScreening = async (jobId) => {
     setIsAnalyzing(true);
     setScreeningResults(null);
+    console.log(`Starting screening for job: ${jobId}, top_k: ${topK}`);
+    
+    // Check if we have applicants first
+    if (applicants.length === 0) {
+      setIsAnalyzing(true);
+      try {
+        const response = await fetch(`/api/jobs/${jobId}/applications/`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const appList = Array.isArray(data) ? data : data.results || [];
+        setApplicants(appList);
+        if (appList.length === 0) {
+          alert("This job has no applicants yet. You need at least one applicant to run AI screening.");
+          setIsAnalyzing(false);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to pre-fetch applicants:", e);
+      }
+    }
+
     try {
       const formData = new FormData();
       formData.append("top_k", topK.toString());
 
       const response = await fetch(`/api/jobs/${jobId}/analyze/`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        },
         body: formData
       });
 
-      if (!response.ok) throw new Error('Analysis failed. Please try again.');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Screening API Error Details:', errorText);
+        throw new Error(`The AI engine encountered an issue (Status ${response.status}). This often happens if the resumes are not yet indexed or the job description is too short.`);
+      }
+
       const data = await response.json();
-      // Assuming data is { status: "success", rankings: [...] } or just the array
+      console.log('Screening results received successfully');
       setScreeningResults(data.rankings || data);
     } catch (err) {
-      alert("Screening Error: " + err.message);
+      console.error('Screening error:', err);
+      alert("AI Screening Failed: " + err.message);
     } finally {
       setIsAnalyzing(false);
     }
@@ -163,10 +194,10 @@ function JobManagement({ onBack, onPostJob, token }) {
           ) : screeningResults ? (
             <div style={{ display: 'grid', gap: '20px' }}>
               {screeningResults.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px' }}>No candidates meet the criteria or no applicants found.</div>
+                <div key="no-results" style={{ textAlign: 'center', padding: '60px' }}>No candidates meet the criteria or no applicants found.</div>
               ) : (
                 screeningResults.map((result, index) => (
-                  <div key={index} style={{
+                  <div key={`rank-${result.id || index}`} style={{
                     background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
                     border: '1px solid rgba(255,255,255,0.1)',
                     padding: '30px',
@@ -264,7 +295,7 @@ function JobManagement({ onBack, onPostJob, token }) {
         ) : (
           jobs.map(job => (
             <div
-              key={job.id}
+              key={`screen-job-${job.id}`}
               onClick={() => setSelectedJobId(job.id)}
               style={{ ...cardStyle, padding: '30px', flexDirection: 'row', justifyContent: 'space-between', gap: '0' }}
               onMouseEnter={(e) => applyHover(e, true)}
@@ -300,9 +331,21 @@ function JobManagement({ onBack, onPostJob, token }) {
             <ChevronLeft size={16} /> Back to Job List
           </button>
 
-          <div style={{ marginBottom: '30px' }}>
-            <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>Applicants for {job?.title}</h3>
-            <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage and screen candidates for this position.</p>
+          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>Applicants for {job?.title}</h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage and screen candidates for this position.</p>
+            </div>
+            <button 
+              onClick={() => {
+                setActiveTab('screening');
+                // setSelectedJobId remains the same
+              }}
+              className="btn-primary"
+              style={{ padding: '12px 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <Search size={18} /> Run AI Screening
+            </button>
           </div>
 
           {loadingApplicants ? (
@@ -316,7 +359,7 @@ function JobManagement({ onBack, onPostJob, token }) {
           ) : (
             <div style={{ display: 'grid', gap: '15px' }}>
               {applicants.map(app => (
-                <div key={app.id} style={{
+                <div key={`app-${app.id}`} style={{
                   background: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.05)',
                   padding: '20px',
@@ -367,7 +410,7 @@ function JobManagement({ onBack, onPostJob, token }) {
         ) : (
           jobs.map(job => (
             <div
-              key={job.id}
+              key={`app-job-${job.id}`}
               onClick={() => fetchApplicants(job.id)}
               style={{ ...cardStyle, padding: '30px', flexDirection: 'row', justifyContent: 'space-between', gap: '0' }}
               onMouseEnter={(e) => applyHover(e, true)}
@@ -418,7 +461,7 @@ function JobManagement({ onBack, onPostJob, token }) {
         ) : (
           <div style={{ display: 'grid', gap: '15px' }}>
             {jobs.map(job => (
-              <div key={job.id} style={{ 
+              <div key={`myjob-${job.id}`} style={{ 
                 background: 'rgba(255,255,255,0.02)', 
                 border: '1px solid rgba(255,255,255,0.05)', 
                 padding: '25px', 
