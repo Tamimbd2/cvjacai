@@ -19,7 +19,7 @@ function JobListing({ onBack }) {
     const MAX_RETRIES = 3;
     const RETRY_DELAY_MS = 3000;
     try {
-      setLoading(true);
+      if (attempt === 1) setLoading(true);
       setError(null);
       const requestOptions = {
         method: "GET",
@@ -59,6 +59,7 @@ function JobListing({ onBack }) {
         setError('Received data in an unexpected format.');
       }
       setError(null);
+      setLoading(false); // ✅ Always stop loading on success
     } catch (err) {
       console.error(`Error fetching jobs (attempt ${attempt}):`, err);
       if (attempt < MAX_RETRIES) {
@@ -69,12 +70,8 @@ function JobListing({ onBack }) {
         );
         setTimeout(() => fetchJobs(attempt + 1), RETRY_DELAY_MS);
       } else {
-        setError('The server is taking too long to respond. Please click \'Try Again\' in a moment.');
-        setLoading(false);
-      }
-    } finally {
-      if (attempt >= MAX_RETRIES || !loading) {
-        setLoading(false);
+        setError("The server is taking too long to respond. Please click 'Try Again' in a moment.");
+        setLoading(false); // ✅ Stop loading after all retries exhausted
       }
     }
   };
