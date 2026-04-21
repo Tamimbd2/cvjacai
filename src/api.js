@@ -13,14 +13,19 @@ export const authApi = {
     return response.json();
   },
 
-  signup: async (name, email, password) => {
+  signup: async (firstName, lastName, email, password) => {
     const response = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ 
+        first_name: firstName, 
+        last_name: lastName, 
+        email, 
+        password 
+      }),
     });
     return response.json();
   },
