@@ -15,38 +15,43 @@ function JobListing({ onBack }) {
     fetchJobs();
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (attempt = 1) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 3000;
     try {
       setLoading(true);
+      setError(null);
       const requestOptions = {
         method: "GET",
-        headers: {
-          "Accept": "application/json"
-        },
+        headers: { "Accept": "application/json" },
         redirect: "follow"
       };
 
       const apiUrl = "/api/jobs/";
-      
-      console.log('Fetching from API:', apiUrl);
+      console.log(`Fetching from API (attempt ${attempt}):`, apiUrl);
       const response = await fetch(apiUrl, requestOptions);
-      
       console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: Failed to fetch jobs`);
+        throw new Error(`HTTP ${response.status}`);
       }
-      
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        // Render cold start returns HTML — retry after a delay
+        const bodyText = await response.text();
+        console.warn('Got non-JSON response, likely a Render cold start. Body preview:', bodyText.substring(0, 100));
+        throw new Error('NOT_JSON');
+      }
+
       const result = await response.json();
       console.log('Fetched jobs result:', result);
-      
-      // Ensure result is an array before setting state
+
       if (Array.isArray(result)) {
         setJobs(result);
-      } else if (result && typeof result === 'object' && result.results && Array.isArray(result.results)) {
-        // Handle paginated results if any
+      } else if (result?.results && Array.isArray(result.results)) {
         setJobs(result.results);
-      } else if (result && typeof result === 'object' && result.data && Array.isArray(result.data)) {
-        // Handle wrapped results if any
+      } else if (result?.data && Array.isArray(result.data)) {
         setJobs(result.data);
       } else {
         console.error('Unexpected API response format:', result);
@@ -55,10 +60,22 @@ function JobListing({ onBack }) {
       }
       setError(null);
     } catch (err) {
-      console.error('Error fetching jobs:', err);
-      setError('Could not load jobs at this time. Please try again later.');
+      console.error(`Error fetching jobs (attempt ${attempt}):`, err);
+      if (attempt < MAX_RETRIES) {
+        const isWakingUp = err.message === 'NOT_JSON';
+        setError(isWakingUp
+          ? `Server is waking up... retrying in ${RETRY_DELAY_MS / 1000}s (${attempt}/${MAX_RETRIES})`
+          : `Connection failed. Retrying... (${attempt}/${MAX_RETRIES})`
+        );
+        setTimeout(() => fetchJobs(attempt + 1), RETRY_DELAY_MS);
+      } else {
+        setError('The server is taking too long to respond. Please click \'Try Again\' in a moment.');
+        setLoading(false);
+      }
     } finally {
-      setLoading(false);
+      if (attempt >= MAX_RETRIES || !loading) {
+        setLoading(false);
+      }
     }
   };
 
