@@ -1,80 +1,118 @@
-import React, { useState } from 'react';
-import { Briefcase, MapPin, DollarSign, Clock, ChevronLeft, Sparkles, CheckCircle2 } from 'lucide-react';
-
-const DUMMY_JOBS = [
-  {
-    id: 1,
-    title: 'Senior Frontend Developer',
-    company: 'TechFlow Solutions',
-    location: 'Remote / Dhaka',
-    salary: '$80,000 - $120,000',
-    type: 'Full-time',
-    posted: '2 days ago',
-    logo: 'TF',
-    color: '#3b82f6',
-    description: 'We are looking for a Senior Frontend Developer with expertise in React and modern CSS. You will be responsible for building high-quality web applications and mentoring junior developers.',
-    requirements: ['5+ years of experience with React', 'Proficiency in CSS/Tailwind', 'Experience with state management', 'Strong problem-solving skills']
-  },
-  {
-    id: 2,
-    title: 'AI/ML Engineer',
-    company: 'NeuralNext AI',
-    location: 'San Francisco, CA',
-    salary: '$120,000 - $180,000',
-    type: 'Full-time',
-    posted: '5 hours ago',
-    logo: 'NN',
-    color: '#10b981',
-    description: 'Join our cutting-edge AI team to develop and deploy large-scale machine learning models. You will work on natural language processing and computer vision projects.',
-    requirements: ['Master or PhD in CS/AI', 'Python, PyTorch or TensorFlow', 'Experience with LLMs', 'Publications in top conferences']
-  },
-  {
-    id: 3,
-    title: 'UI/UX Designer',
-    company: 'CreativeEdge Lab',
-    location: 'Berlin, Germany',
-    salary: '€60,000 - €90,000',
-    type: 'Contract',
-    posted: '1 week ago',
-    logo: 'CE',
-    color: '#ec4899',
-    description: 'Create beautiful and intuitive user experiences for our international clients. You will be involved in the entire design process from research to prototyping.',
-    requirements: ['Portfolio showing UI/UX work', 'Figma proficient', 'Experience with design systems', 'User research knowledge']
-  },
-  {
-    id: 4,
-    title: 'Full Stack Engineer',
-    company: 'Nexus Cloud',
-    location: 'London, UK',
-    salary: '£70,000 - £110,000',
-    type: 'Full-time',
-    posted: '3 days ago',
-    logo: 'NC',
-    color: '#8b5cf6',
-    description: 'Help us scale our cloud infrastructure and build robust APIs. You will work across the stack from database optimization to frontend features.',
-    requirements: ['Node.js and TypeScript', 'React experience', 'PostgreSQL and Redis', 'CI/CD and Docker']
-  },
-  {
-    id: 5,
-    title: 'Product Manager',
-    company: 'ScaleUp Systems',
-    location: 'Singapore',
-    salary: '$100,000 - $150,000',
-    type: 'Full-time',
-    posted: '1 day ago',
-    logo: 'SS',
-    color: '#f59e0b',
-    description: 'Define the product roadmap and work closely with engineering and design teams. You will bridge the gap between business goals and technical execution.',
-    requirements: ['3+ years in Product Management', 'Agile/Scrum expertise', 'Data-driven decision making', 'Excellent communication']
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Briefcase, MapPin, DollarSign, Clock, ChevronLeft, Sparkles, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 function JobListing({ onBack }) {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [applyingJob, setApplyingJob] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [file, setFile] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const requestOptions = {
+        method: "GET",
+        headers: {
+          "Accept": "application/json"
+        },
+        redirect: "follow"
+      };
+
+      const apiUrl = "https://cvjachai-api.onrender.com/api/jobs/";
+      // Using AllOrigins proxy to bypass CORS during development
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+
+      console.log('Fetching from API via Proxy:', apiUrl);
+      const response = await fetch(proxyUrl, requestOptions);
+      
+      console.log('Proxy Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: Failed to fetch jobs via proxy`);
+      }
+      
+      const result = await response.json();
+      console.log('Fetched jobs result via proxy:', result);
+      
+      // Ensure result is an array before setting state
+      if (Array.isArray(result)) {
+        setJobs(result);
+      } else if (result && typeof result === 'object' && result.results && Array.isArray(result.results)) {
+        // Handle paginated results if any
+        setJobs(result.results);
+      } else if (result && typeof result === 'object' && result.data && Array.isArray(result.data)) {
+        // Handle wrapped results if any
+        setJobs(result.data);
+      } else {
+        console.error('Unexpected API response format:', result);
+        setJobs([]);
+        setError('Received data in an unexpected format.');
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching jobs:', err);
+      setError('Could not load jobs at this time. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Recent';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Recent';
+      
+      const now = new Date();
+      const diffInMs = now - date;
+      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+      
+      if (diffInHours < 1) {
+        const diffInMins = Math.floor(diffInMs / (1000 * 60));
+        return diffInMins <= 0 ? 'Just now' : `${diffInMins}m ago`;
+      }
+      if (diffInHours < 24) {
+        return `${diffInHours}h ago`;
+      }
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays}d ago`;
+    } catch (e) {
+      return 'Recent';
+    }
+  };
+
+  const getRequirements = (skillsString) => {
+    if (!skillsString) return [];
+    try {
+      return skillsString.split(',').map(s => s.trim()).filter(s => s !== '');
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const getJobColor = (id) => {
+    const colors = ['#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4'];
+    const colorId = id || Math.floor(Math.random() * 100);
+    return colors[colorId % colors.length];
+  };
+
+  const getJobLogo = (title) => {
+    if (!title || typeof title !== 'string') return 'JB';
+    try {
+      const parts = title.split(' ').filter(p => p.length > 0);
+      if (parts.length === 0) return 'JB';
+      return parts.map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    } catch (e) {
+      return 'JB';
+    }
+  };
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
@@ -89,10 +127,7 @@ function JobListing({ onBack }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate API call
     console.log('Submitting application for:', applyingJob.title);
-    console.log('Data:', formData, 'File:', file?.name);
-    
     setIsSubmitted(true);
     setTimeout(() => {
       setApplyingJob(null);
@@ -143,150 +178,173 @@ function JobListing({ onBack }) {
           </p>
         </div>
 
-        <div className="jobs-list" style={{ display: 'grid', gap: '20px' }}>
-          {DUMMY_JOBS.map((job) => {
-            const isExpanded = expandedId === job.id;
-            return (
-              <div 
-                key={job.id} 
-                className={`job-card ${isExpanded ? 'expanded' : ''}`}
-                onClick={() => toggleExpand(job.id)}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: `1px solid ${isExpanded ? 'rgba(34, 211, 238, 0.3)' : 'rgba(255, 255, 255, 0.08)'}`,
-                  borderRadius: '20px',
-                  padding: '28px',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  cursor: 'pointer',
-                  backdropFilter: 'blur(10px)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '24px'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isExpanded) {
-                    e.currentTarget.style.transform = 'translateY(-5px)';
-                    e.currentTarget.style.borderColor = 'rgba(34, 211, 238, 0.3)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isExpanded) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                    <div style={{ 
-                      width: '64px', 
-                      height: '64px', 
-                      borderRadius: '16px', 
-                      background: `linear-gradient(135deg, ${job.color} 0%, rgba(0,0,0,0.3) 100%)`, 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center',
-                      fontSize: '1.6rem',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      boxShadow: `0 8px 16px ${job.color}33`
-                    }}>
-                      {job.logo}
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', fontWeight: '700', color: '#fff' }}>{job.title}</h3>
-                      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                          <Briefcase size={16} color="var(--accent-cyan)" />
-                          {job.company}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                          <MapPin size={16} color="var(--accent-cyan)" />
-                          {job.location}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                          <DollarSign size={16} color="var(--accent-cyan)" />
-                          {job.salary}
-                        </div>
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '20px' }}>
+            <Loader2 className="animate-spin" size={48} color="var(--accent-cyan)" />
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem' }}>Loading the best matches for you...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <AlertCircle size={48} color="#ef4444" style={{ margin: '0 auto 20px' }} />
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Connection Error</h3>
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '24px' }}>{error}</p>
+            <button onClick={fetchJobs} className="btn-primary" style={{ margin: '0 auto', padding: '12px 24px' }}>Try Again</button>
+          </div>
+        ) : jobs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem' }}>No job openings found at the moment.</p>
+          </div>
+        ) : (
+          <div className="jobs-list" style={{ display: 'grid', gap: '20px' }}>
+            {jobs.map((job) => {
+              const isExpanded = expandedId === job.id;
+              const jobColor = getJobColor(job.id);
+              const jobLogo = getJobLogo(job.title);
+              const requirements = getRequirements(job.skills_required);
+              const postedTime = formatDate(job.created_at);
+
+              return (
+                <div 
+                  key={job.id} 
+                  className={`job-card ${isExpanded ? 'expanded' : ''}`}
+                  onClick={() => toggleExpand(job.id)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: `1px solid ${isExpanded ? 'rgba(34, 211, 238, 0.3)' : 'rgba(255, 255, 255, 0.08)'}`,
+                    borderRadius: '20px',
+                    padding: '28px',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '24px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isExpanded) {
+                      e.currentTarget.style.transform = 'translateY(-5px)';
+                      e.currentTarget.style.borderColor = 'rgba(34, 211, 238, 0.3)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isExpanded) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                      <div style={{ 
+                        width: '64px', 
+                        height: '64px', 
+                        borderRadius: '16px', 
+                        background: `linear-gradient(135deg, ${jobColor} 0%, rgba(0,0,0,0.3) 100%)`, 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center',
+                        fontSize: '1.6rem',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        boxShadow: `0 8px 16px ${jobColor}33`
+                      }}>
+                        {jobLogo}
                       </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '18px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '0.85rem', background: 'rgba(255, 255, 255, 0.08)', padding: '6px 14px', borderRadius: '8px', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500' }}>
-                        {job.type}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.4)' }}>
-                        <Clock size={14} />
-                        {job.posted}
-                      </div>
-                    </div>
-                    {!isExpanded && (
-                      <button 
-                        className="btn-primary" 
-                        style={{ border: 'none', cursor: 'pointer', padding: '12px 28px', fontSize: '1rem', borderRadius: '10px' }}
-                        onClick={(e) => handleApplyClick(e, job)}
-                      >
-                        Apply Now
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="job-details" style={{ 
-                    borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
-                    paddingTop: '24px',
-                    animation: 'slideDown 0.4s ease-out'
-                  }}>
-                    <div style={{ marginBottom: '24px' }}>
-                      <h4 style={{ color: 'var(--accent-cyan)', marginBottom: '12px', fontSize: '1.2rem' }}>About the Role</h4>
-                      <p style={{ color: 'rgba(255, 255, 255, 0.8)', lineHeight: '1.7', fontSize: '1.05rem' }}>
-                        {job.description}
-                      </p>
-                    </div>
-
-                    <div style={{ marginBottom: '32px' }}>
-                      <h4 style={{ color: 'var(--accent-cyan)', marginBottom: '12px', fontSize: '1.2rem' }}>Requirements</h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-                        {job.requirements.map((req, index) => (
-                          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255, 255, 255, 0.7)' }}>
-                            <CheckCircle2 size={16} color="var(--accent-cyan)" />
-                            {req}
+                      <div>
+                        <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', fontWeight: '700', color: '#fff' }}>{job.title}</h3>
+                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                            <Briefcase size={16} color="var(--accent-cyan)" />
+                            {job.company_name}
                           </div>
-                        ))}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                            <MapPin size={16} color="var(--accent-cyan)" />
+                            {job.location}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                            <DollarSign size={16} color="var(--accent-cyan)" />
+                            {job.min_experience}+ Years Exp.
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                      <button 
-                        className="btn-primary" 
-                        style={{ border: 'none', cursor: 'pointer', padding: '14px 40px', fontSize: '1.1rem', borderRadius: '10px' }}
-                        onClick={(e) => handleApplyClick(e, job)}
-                      >
-                        Apply for this position
-                      </button>
-                      <button 
-                        className="btn-secondary" 
-                        style={{ border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '14px 20px', fontSize: '1.1rem', borderRadius: '10px', background: 'transparent' }}
-                        onClick={(e) => { e.stopPropagation(); toggleExpand(job.id); }}
-                      >
-                        Close
-                      </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '0.85rem', background: 'rgba(255, 255, 255, 0.08)', padding: '6px 14px', borderRadius: '8px', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500' }}>
+                          {job.is_active ? 'Active' : 'Closed'}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.4)' }}>
+                          <Clock size={14} />
+                          {postedTime}
+                        </div>
+                      </div>
+                      {!isExpanded && (
+                        <button 
+                          className="btn-primary" 
+                          style={{ border: 'none', cursor: 'pointer', padding: '12px 28px', fontSize: '1rem', borderRadius: '10px' }}
+                          onClick={(e) => handleApplyClick(e, job)}
+                        >
+                          Apply Now
+                        </button>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+
+                  {isExpanded && (
+                    <div className="job-details" style={{ 
+                      borderTop: '1px solid rgba(255, 255, 255, 0.08)', 
+                      paddingTop: '24px',
+                      animation: 'slideDown 0.4s ease-out'
+                    }}>
+                      <div style={{ marginBottom: '24px' }}>
+                        <h4 style={{ color: 'var(--accent-cyan)', marginBottom: '12px', fontSize: '1.2rem' }}>About the Role</h4>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.8)', lineHeight: '1.7', fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>
+                          {job.description}
+                        </p>
+                      </div>
+
+                      <div style={{ marginBottom: '32px' }}>
+                        <h4 style={{ color: 'var(--accent-cyan)', marginBottom: '12px', fontSize: '1.2rem' }}>Required Skills</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                          {requirements.map((req, index) => (
+                            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255, 255, 255, 0.7)' }}>
+                              <CheckCircle2 size={16} color="var(--accent-cyan)" />
+                              {req}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '16px' }}>
+                        <button 
+                          className="btn-primary" 
+                          style={{ border: 'none', cursor: 'pointer', padding: '14px 40px', fontSize: '1.1rem', borderRadius: '10px' }}
+                          onClick={(e) => handleApplyClick(e, job)}
+                        >
+                          Apply for this position
+                        </button>
+                        <button 
+                          className="btn-secondary" 
+                          style={{ border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '14px 20px', fontSize: '1.1rem', borderRadius: '10px', background: 'transparent' }}
+                          onClick={(e) => { e.stopPropagation(); toggleExpand(job.id); }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Application Modal */}
@@ -343,7 +401,7 @@ function JobListing({ onBack }) {
                 <div style={{ marginBottom: '30px' }}>
                   <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '8px' }}>Apply for Position</h2>
                   <p style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>{applyingJob.title}</p>
-                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem' }}>at {applyingJob.company}</p>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem' }}>at {applyingJob.company_name}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
@@ -474,6 +532,13 @@ function JobListing({ onBack }) {
         @keyframes modalEntrance {
           from { opacity: 0; transform: scale(0.9) translateY(20px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>
