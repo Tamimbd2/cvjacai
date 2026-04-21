@@ -7,9 +7,12 @@ import Optimization from './components/Optimization/Optimization';
 import AnalysisResults from './components/AnalysisResults/AnalysisResults';
 import Auth from './components/Auth/Auth';
 import JobListing from './components/JobListing/JobListing';
+import CreateJob from './components/JobListing/CreateJob';
+import JobManagement from './components/JobListing/JobManagement';
+import Navbar from './components/Common/Navbar';
 
 function App() {
-  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', 'auth', or 'find_job'
+  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', 'auth', 'find_job', 'create_job', or 'job_management'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [user, setUser] = useState(null);
@@ -126,7 +129,27 @@ function App() {
           />
         );
       case 'find_job':
-        return <JobListing onBack={() => setView('home')} />;
+        return (
+          <JobListing 
+            onBack={() => setView('home')} 
+            onCreateJob={() => navigateToProtected('create_job')} 
+          />
+        );
+      case 'create_job':
+        return (
+          <CreateJob 
+            onBack={() => setView('home')} 
+            token={user?.access || user?.access_token || user?.token} 
+          />
+        );
+      case 'job_management':
+        return (
+          <JobManagement
+            onBack={() => setView('home')}
+            onPostJob={() => setView('create_job')}
+            token={user?.access || user?.access_token || user?.token}
+          />
+        );
       default:
         return (
           <Home
@@ -134,6 +157,7 @@ function App() {
             onStartShortlisting={() => navigateToProtected('shortlisting')}
             onStartPersonalization={() => navigateToProtected('personalization')}
             onFindJob={() => setView('find_job')}
+            onCreateJob={() => navigateToProtected('create_job')}
             onLogin={() => { setAuthMode('login'); setView('auth'); }}
             onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
             onLogout={handleLogout}
@@ -144,6 +168,16 @@ function App() {
 
   return (
     <div className="app-container">
+      {view !== 'auth' && (
+        <Navbar 
+          isLoggedIn={isLoggedIn}
+          onLogout={handleLogout}
+          onLogin={() => { setAuthMode('login'); setView('auth'); }}
+          onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
+          onCreateJob={() => navigateToProtected('create_job')}
+          onJobManagement={() => navigateToProtected('job_management')}
+        />
+      )}
       {renderView()}
     </div>
   );

@@ -18,32 +18,9 @@ import {
 } from 'lucide-react';
 import { FeatureCard, TrustCard } from '../Common/Common';
 
-function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onLogin, onSignUp, onLogout, onFindJob }) {
+function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onFindJob, onCreateJob }) {
   return (
     <>
-      {/* Navbar */}
-      <nav>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div className="logo" onClick={() => window.location.reload()}>
-            <div className="logo-icon">
-              <Sparkles size={18} color="white" fill="white" />
-            </div>
-            <span>CVJACHAI</span>
-          </div>
-          {/* Tabs removed as per request */}
-          <div className="nav-auth-btns">
-            {isLoggedIn ? (
-              <button onClick={onLogout} className="btn-logout">Logout</button>
-            ) : (
-              <>
-                <a href="#" onClick={(e) => { e.preventDefault(); onLogin(); }} className="btn-login">Login</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); onSignUp(); }} className="btn-signup">Sign Up</a>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <header className="hero">
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>

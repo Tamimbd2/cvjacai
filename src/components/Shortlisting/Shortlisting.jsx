@@ -54,17 +54,11 @@ function Shortlisting({ onBack, onAnalyze, token, onStartAnalysis }) {
   return (
     <div className="shortlisting-screen">
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="#" onClick={(e) => { e.preventDefault(); onBack(); }} className="back-link">
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); onBack(); }} className="back-link" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-cyan)', textDecoration: 'none', fontWeight: '500' }}>
             <ArrowLeft size={18} />
             Back to Home
           </a>
-          <div className="logo" onClick={() => window.location.reload()}>
-            <div className="logo-icon">
-              <Sparkles size={18} color="white" fill="white" />
-            </div>
-            <span>CVJACHAI</span>
-          </div>
         </div>
 
         <div className="form-header">

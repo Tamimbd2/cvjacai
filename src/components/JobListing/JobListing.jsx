@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, DollarSign, Clock, ChevronLeft, Sparkles, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
-function JobListing({ onBack }) {
+function JobListing({ onBack, onCreateJob }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -137,16 +137,53 @@ function JobListing({ onBack }) {
     setFile(null);
   };
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting application for:', applyingJob.title);
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setApplyingJob(null);
-      setIsSubmitted(false);
-      setFormData({ name: '', email: '', phone: '' });
-      setFile(null);
-    }, 3000);
+    if (!file) {
+      alert("Please upload your resume first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const data = new FormData();
+      data.append("job", applyingJob.id); // Assuming applyingJob.id is the correct identifier
+      data.append("candidate_name", formData.name);
+      data.append("candidate_email", formData.email);
+      data.append("resume_file", file);
+
+      const requestOptions = {
+        method: "POST",
+        body: data,
+        redirect: "follow"
+      };
+
+      const response = await fetch("/api/jobs/apply/", requestOptions);
+      
+      if (!response.ok) {
+        const errorResult = await response.json().catch(() => ({}));
+        throw new Error(errorResult.detail || errorResult.message || `Submission failed (HTTP ${response.status})`);
+      }
+
+      console.log('Application submitted successfully');
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setApplyingJob(null);
+        setIsSubmitted(false);
+        setFormData({ name: '', email: '', phone: '' });
+        setFile(null);
+      }, 3000);
+    } catch (err) {
+      console.error('Submission error:', err);
+      setSubmitError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -178,16 +215,18 @@ function JobListing({ onBack }) {
         </button>
 
         <div className="header" style={{ marginBottom: '50px' }}>
-          <div className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(6, 182, 212, 0.1)', color: 'var(--accent-cyan)', padding: '6px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '15px' }}>
-            <Sparkles size={14} />
-            Available Positions
+          <div>
+            <div className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(6, 182, 212, 0.1)', color: 'var(--accent-cyan)', padding: '6px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '15px' }}>
+              <Sparkles size={14} />
+              Available Positions
+            </div>
+            <h1 style={{ fontSize: '3rem', fontWeight: '801', marginBottom: '15px', letterSpacing: '-1px' }}>
+              Find Your Dream <span className="gradient-text">Job</span>
+            </h1>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.2rem', maxWidth: '600px' }}>
+              Explore opportunities that match your skills. Our AI-driven platform connects top talent with innovative companies.
+            </p>
           </div>
-          <h1 style={{ fontSize: '3rem', fontWeight: '801', marginBottom: '15px', letterSpacing: '-1px' }}>
-            Find Your Dream <span className="gradient-text">Job</span>
-          </h1>
-          <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.2rem', maxWidth: '600px' }}>
-            Explore opportunities that match your skills. Our AI-driven platform connects top talent with innovative companies.
-          </p>
         </div>
 
         {loading ? (
@@ -497,17 +536,28 @@ function JobListing({ onBack }) {
                     </div>
                   </div>
 
+                  {submitError && (
+                    <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '10px', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                      {submitError}
+                    </div>
+                  )}
+
                   <button 
                     type="submit" 
                     className="btn-primary" 
+                    disabled={isSubmitting}
                     style={{ 
                       marginTop: '10px',
                       justifyContent: 'center',
                       padding: '16px',
-                      fontSize: '1.1rem'
+                      fontSize: '1.1rem',
+                      opacity: isSubmitting ? 0.7 : 1,
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    Submit Application
+                    {isSubmitting ? (
+                      <><Loader2 className="animate-spin" size={20} style={{ marginRight: '10px' }} /> Submitting...</>
+                    ) : 'Submit Application'}
                   </button>
                 </form>
               </>
