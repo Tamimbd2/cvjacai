@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Briefcase, Users, Trash2, Search, Plus, ChevronLeft, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 function JobManagement({ onBack, onPostJob, token }) {
-  const [activeTab, setActiveTab] = useState('my_jobs'); // 'my_jobs', 'applicants'
+  const [activeTab, setActiveTab] = useState('my_jobs'); // 'my_jobs', 'applicants', 'screening'
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [screeningResults, setScreeningResults] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [topK, setTopK] = useState(3);
 
   useEffect(() => {
     fetchMyJobs();
@@ -57,6 +60,7 @@ function JobManagement({ onBack, onPostJob, token }) {
   const fetchApplicants = async (jobId) => {
     setLoadingApplicants(true);
     setSelectedJobId(jobId);
+    setScreeningResults(null); // Clear previous screening results
     try {
       const response = await fetch(`/api/jobs/${jobId}/applications/`, {
         headers: { "Authorization": `Bearer ${token}` }
@@ -70,6 +74,218 @@ function JobManagement({ onBack, onPostJob, token }) {
     } finally {
       setLoadingApplicants(false);
     }
+  };
+
+  const runScreening = async (jobId) => {
+    setIsAnalyzing(true);
+    setScreeningResults(null);
+    try {
+      const formData = new FormData();
+      formData.append("top_k", topK.toString());
+
+      const response = await fetch(`/api/jobs/${jobId}/analyze/`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Analysis failed. Please try again.');
+      const data = await response.json();
+      // Assuming data is { status: "success", rankings: [...] } or just the array
+      setScreeningResults(data.rankings || data);
+    } catch (err) {
+      alert("Screening Error: " + err.message);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const renderScreeningTab = () => {
+    if (selectedJobId) {
+      const job = jobs.find(j => j.id === selectedJobId);
+      return (
+        <div>
+          <button
+            onClick={() => { setSelectedJobId(null); setScreeningResults(null); }}
+            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: '20px' }}
+          >
+            <ChevronLeft size={16} /> Select Different Job
+          </button>
+
+          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div>
+              <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>AI Screening: {job?.title}</h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)' }}>Our AI will rank applicants based on their match with the job description.</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ textAlign: 'right' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px' }}>Top Candidates</label>
+                <select 
+                  className="custom-select"
+                  value={topK} 
+                  onChange={(e) => setTopK(e.target.value)}
+                >
+                  <option value="1">Top 1</option>
+                  <option value="3">Top 3</option>
+                  <option value="5">Top 5</option>
+                  <option value="10">Top 10</option>
+                </select>
+              </div>
+              <button 
+                onClick={() => runScreening(selectedJobId)}
+                disabled={isAnalyzing}
+                style={{
+                  background: 'var(--accent-cyan)',
+                  color: 'black',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                  opacity: isAnalyzing ? 0.7 : 1
+                }}
+              >
+                {isAnalyzing ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
+                {isAnalyzing ? 'Analyzing...' : 'Run AI Screening'}
+              </button>
+            </div>
+          </div>
+
+          {isAnalyzing ? (
+            <div style={{ textAlign: 'center', padding: '100px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
+              <div className="loader-orbit" style={{ width: '80px', height: '80px', margin: '0 auto 30px' }}></div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Analyzing Resumes</h3>
+              <p style={{ color: 'rgba(255,255,255,0.5)' }}>Comparing applicant profiles with job requirements using advanced NLP...</p>
+            </div>
+          ) : screeningResults ? (
+            <div style={{ display: 'grid', gap: '20px' }}>
+              {screeningResults.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px' }}>No candidates meet the criteria or no applicants found.</div>
+              ) : (
+                screeningResults.map((result, index) => (
+                  <div key={index} style={{
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    padding: '30px',
+                    borderRadius: '24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {/* Rank Badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '0',
+                      left: '0',
+                      background: index === 0 ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)',
+                      color: index === 0 ? 'black' : 'white',
+                      padding: '5px 15px',
+                      fontSize: '0.8rem',
+                      fontWeight: '800',
+                      borderBottomRightRadius: '16px'
+                    }}>
+                      RANK #{index + 1}
+                    </div>
+
+                    <div style={{ marginTop: '10px' }}>
+                      <h4 style={{ fontSize: '1.5rem', marginBottom: '5px' }}>{result.candidate_name || result.name}</h4>
+                      <p style={{ color: 'rgba(255,255,255,0.6)' }}>{result.candidate_email || result.email}</p>
+                      
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                        <div style={{ background: 'rgba(0,255,242,0.05)', color: 'var(--accent-cyan)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600' }}>
+                          Score: {Math.round((result.score || result.match_score || 0) * 100)}%
+                        </div>
+                        {result.experience && (
+                          <div style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>
+                            {result.experience} Years Exp.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                      <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '50%', 
+                        border: '4px solid rgba(255,255,255,0.05)',
+                        borderTopColor: 'var(--accent-cyan)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1rem',
+                        fontWeight: '800'
+                      }}>
+                        {Math.round((result.score || result.match_score || 0) * 100)}
+                      </div>
+                      <a
+                        href={result.resume_file || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary"
+                        style={{ padding: '8px 16px', fontSize: '0.85rem', borderRadius: '8px', textDecoration: 'none' }}
+                      >
+                        View Profile
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '80px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+              <Search size={48} style={{ marginBottom: '20px', opacity: 0.3 }} />
+              <h3>Ready for Screening</h3>
+              <p style={{ maxWidth: '400px', margin: '0 auto' }}>Click the button above to start the AI-powered analysis of all applicants for this position.</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'grid', gap: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3 style={{ fontSize: '1.5rem', margin: 0 }}>Select a job for AI Screening</h3>
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: 0 }}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+        {jobs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px' }}>No jobs found. Post a job first!</div>
+        ) : (
+          jobs.map(job => (
+            <div
+              key={job.id}
+              onClick={() => setSelectedJobId(job.id)}
+              style={{ ...cardStyle, padding: '30px', flexDirection: 'row', justifyContent: 'space-between', gap: '0' }}
+              onMouseEnter={(e) => applyHover(e, true)}
+              onMouseLeave={(e) => applyHover(e, false)}
+            >
+              <div style={{ textAlign: 'left' }}>
+                <h4 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '5px' }}>{job.title}</h4>
+                <p style={{ color: 'rgba(255,255,255,0.4)' }}>{job.location} • {job.company_name}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: '700', fontSize: '1.2rem', color: 'var(--accent-purple)' }}>Screen</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>Applicants</div>
+                </div>
+                <ChevronLeft size={20} style={{ transform: 'rotate(180deg)', opacity: 0.5 }} />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    );
   };
 
   const renderApplicantsTab = () => {
@@ -245,6 +461,7 @@ function JobManagement({ onBack, onPostJob, token }) {
       setActiveTab('dashboard');
       setSelectedJobId(null);
       setApplicants([]);
+      setScreeningResults(null);
     } else {
       onBack();
     }
@@ -319,6 +536,7 @@ function JobManagement({ onBack, onPostJob, token }) {
             {/* Screening Card */}
             <div 
               className="mgmt-card"
+              onClick={() => setActiveTab('screening')}
               style={cardStyle}
               onMouseEnter={(e) => applyHover(e, true)}
               onMouseLeave={(e) => applyHover(e, false)}
@@ -330,7 +548,7 @@ function JobManagement({ onBack, onPostJob, token }) {
               <p style={cardSubtitleStyle}>AI shortlisting.</p>
             </div>
           </div>
-        ) : activeTab === 'my_jobs' ? renderMyJobsTab() : renderApplicantsTab()}
+        ) : activeTab === 'my_jobs' ? renderMyJobsTab() : activeTab === 'screening' ? renderScreeningTab() : renderApplicantsTab()}
       </div>
 
       {/* Delete Success Dialog */}
@@ -364,10 +582,35 @@ function JobManagement({ onBack, onPostJob, token }) {
         .mgmt-card {
           transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
+        .loader-orbit {
+          border: 4px solid rgba(255, 255, 255, 0.1);
+          border-top: 4px solid var(--accent-cyan);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        .custom-select {
+          background: #1a1a1a;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          padding: 8px 12px;
+          border-radius: 8px;
+          outline: none;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .custom-select option {
+          background: #1a1a1a;
+          color: white;
+          padding: 10px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
       `}</style>
     </div>
   );
-}
+};
 
 const applyHover = (e, isEnter) => {
   const card = e.currentTarget;
