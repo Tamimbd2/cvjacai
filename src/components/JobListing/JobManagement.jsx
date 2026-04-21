@@ -14,20 +14,45 @@ function JobManagement({ onBack, onPostJob, token }) {
     fetchMyJobs();
   }, []);
 
-  const fetchMyJobs = async () => {
-    setLoading(true);
+  const fetchMyJobs = async (attempt = 1) => {
+    const MAX_RETRIES = 10;
+    const RETRY_DELAY_MS = 5000;
     try {
-      // Fetching only the jobs posted by the current user
+      if (attempt === 1) setLoading(true);
+      setError(null);
       const response = await fetch("/api/jobs/my/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to fetch your jobs');
+
+      if (!response.ok) {
+        if (response.status === 504 || response.status === 502 || response.status === 503) {
+          throw new Error('SERVER_TIMEOUT');
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('NOT_JSON');
+      }
+
       const data = await response.json();
       setJobs(Array.isArray(data) ? data : data.results || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
+      setError(null);
       setLoading(false);
+    } catch (err) {
+      console.error(`Error fetching my jobs (attempt ${attempt}):`, err);
+      if (attempt < MAX_RETRIES) {
+        const isWakingUp = err.message === 'NOT_JSON' || err.message === 'SERVER_TIMEOUT';
+        setError(isWakingUp
+          ? `Server is waking up... retrying in ${RETRY_DELAY_MS / 1000}s (${attempt}/${MAX_RETRIES})`
+          : `Connection failed. Retrying... (${attempt}/${MAX_RETRIES})`
+        );
+        setTimeout(() => fetchMyJobs(attempt + 1), RETRY_DELAY_MS);
+      } else {
+        setError("The server is taking too long to wake up. Please click 'Try Again' in a moment.");
+        setLoading(false);
+      }
     }
   };
 

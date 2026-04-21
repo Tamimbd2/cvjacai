@@ -16,8 +16,8 @@ function JobListing({ onBack, onCreateJob }) {
   }, []);
 
   const fetchJobs = async (attempt = 1) => {
-    const MAX_RETRIES = 3;
-    const RETRY_DELAY_MS = 3000;
+    const MAX_RETRIES = 10;
+    const RETRY_DELAY_MS = 5000;
     try {
       if (attempt === 1) setLoading(true);
       setError(null);
@@ -33,14 +33,14 @@ function JobListing({ onBack, onCreateJob }) {
       console.log('Response status:', response.status);
 
       if (!response.ok) {
+        if (response.status === 504 || response.status === 502 || response.status === 503) {
+          throw new Error('SERVER_TIMEOUT');
+        }
         throw new Error(`HTTP ${response.status}`);
       }
 
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        // Render cold start returns HTML — retry after a delay
-        const bodyText = await response.text();
-        console.warn('Got non-JSON response, likely a Render cold start. Body preview:', bodyText.substring(0, 100));
         throw new Error('NOT_JSON');
       }
 
@@ -59,19 +59,19 @@ function JobListing({ onBack, onCreateJob }) {
         setError('Received data in an unexpected format.');
       }
       setError(null);
-      setLoading(false); // ✅ Always stop loading on success
+      setLoading(false);
     } catch (err) {
       console.error(`Error fetching jobs (attempt ${attempt}):`, err);
       if (attempt < MAX_RETRIES) {
-        const isWakingUp = err.message === 'NOT_JSON';
+        const isWakingUp = err.message === 'NOT_JSON' || err.message === 'SERVER_TIMEOUT';
         setError(isWakingUp
           ? `Server is waking up... retrying in ${RETRY_DELAY_MS / 1000}s (${attempt}/${MAX_RETRIES})`
           : `Connection failed. Retrying... (${attempt}/${MAX_RETRIES})`
         );
         setTimeout(() => fetchJobs(attempt + 1), RETRY_DELAY_MS);
       } else {
-        setError("The server is taking too long to respond. Please click 'Try Again' in a moment.");
-        setLoading(false); // ✅ Stop loading after all retries exhausted
+        setError("The server is taking too long to wake up. Please click 'Try Again' in a moment.");
+        setLoading(false);
       }
     }
   };
