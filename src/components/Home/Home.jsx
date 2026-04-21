@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { FeatureCard, TrustCard } from '../Common/Common';
 
-function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onLogin, onSignUp, onLogout }) {
+function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onLogin, onSignUp, onLogout, onFindJob }) {
   return (
     <>
       {/* Navbar */}
@@ -61,13 +61,29 @@ function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onLogin
               Transform your hiring process with intelligent resume screening.
               Analyze candidates instantly with precision and accuracy powered by next-gen AI.
             </p>
-            <div className="hero-btns">
+            <div className="hero-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
               <button onClick={onStartShortlisting} className="btn-primary" style={{ border: 'none', cursor: 'pointer' }}>
                 Resume Shortlisting
                 <ChevronRight size={18} />
               </button>
               <button onClick={onStartPersonalization} className="btn-secondary" style={{ cursor: 'pointer' }}>
                 Resume Personalization
+              </button>
+              <button 
+                onClick={onFindJob} 
+                className="btn-primary" 
+                style={{ 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)',
+                  boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)',
+                  padding: '12px 30px',
+                  fontSize: '1.1rem',
+                  fontWeight: '600'
+                }}
+              >
+                Find job
+                <Search size={18} style={{ marginLeft: '8px' }} />
               </button>
             </div>
             <div className="hero-stats">

@@ -6,9 +6,10 @@ import Results from './components/Results/Results';
 import Optimization from './components/Optimization/Optimization';
 import AnalysisResults from './components/AnalysisResults/AnalysisResults';
 import Auth from './components/Auth/Auth';
+import JobListing from './components/JobListing/JobListing';
 
 function App() {
-  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', or 'auth'
+  const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', 'auth', or 'find_job'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [user, setUser] = useState(null);
@@ -124,12 +125,15 @@ function App() {
             onBack={() => setView('home')}
           />
         );
+      case 'find_job':
+        return <JobListing onBack={() => setView('home')} />;
       default:
         return (
           <Home
             isLoggedIn={isLoggedIn}
             onStartShortlisting={() => navigateToProtected('shortlisting')}
             onStartPersonalization={() => navigateToProtected('personalization')}
+            onFindJob={() => setView('find_job')}
             onLogin={() => { setAuthMode('login'); setView('auth'); }}
             onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
             onLogout={handleLogout}
