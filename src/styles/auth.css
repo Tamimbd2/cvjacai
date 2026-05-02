@@ -482,9 +482,27 @@
 }
 
 .btn-google:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.forgot-back-link {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.forgot-back-link a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.forgot-back-link a:hover {
+  color: white;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
 }
 
 .google-icon {
