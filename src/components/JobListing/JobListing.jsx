@@ -39,12 +39,15 @@ function JobListing({ onBack, onCreateJob }) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error('Expected JSON but received HTML or invalid text:', text.substring(0, 200));
         throw new Error('NOT_JSON');
       }
 
-      const result = await response.json();
       console.log('Fetched jobs result:', result);
 
       if (Array.isArray(result)) {
