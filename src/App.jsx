@@ -10,8 +10,11 @@ import JobListing from './components/JobListing/JobListing';
 import CreateJob from './components/JobListing/CreateJob';
 import JobManagement from './components/JobListing/JobManagement';
 import Navbar from './components/Common/Navbar';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
+  // Replace with your actual Google Client ID from Google Cloud Console
+  const GOOGLE_CLIENT_ID = "1036628247859-0o1d664qrn16suiub66j1lv5lm6lle4t.apps.googleusercontent.com";
   const [view, setView] = useState('home'); // 'home', 'shortlisting', 'results', 'personalization', 'analysis_results', 'auth', 'find_job', 'create_job', or 'job_management'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
@@ -167,19 +170,21 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      {view !== 'auth' && (
-        <Navbar 
-          isLoggedIn={isLoggedIn}
-          onLogout={handleLogout}
-          onLogin={() => { setAuthMode('login'); setView('auth'); }}
-          onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
-          onCreateJob={() => navigateToProtected('create_job')}
-          onJobManagement={() => navigateToProtected('job_management')}
-        />
-      )}
-      {renderView()}
-    </div>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className="app-container">
+        {view !== 'auth' && (
+          <Navbar 
+            isLoggedIn={isLoggedIn}
+            onLogout={handleLogout}
+            onLogin={() => { setAuthMode('login'); setView('auth'); }}
+            onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
+            onCreateJob={() => navigateToProtected('create_job')}
+            onJobManagement={() => navigateToProtected('job_management')}
+          />
+        )}
+        {renderView()}
+      </div>
+    </GoogleOAuthProvider>
   );
 }
 

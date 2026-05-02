@@ -57,6 +57,18 @@ export const authApi = {
     });
     return response.json();
   },
+
+  googleLogin: async (token) => {
+    const response = await fetch(`${BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+    return response.json();
+  },
 };
 
 export const resumeApi = {

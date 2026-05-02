@@ -2,8 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Users, Mail, ShieldCheck, Eye, EyeOff, FileText, Zap } from 'lucide-react';
 import { authApi } from '../../api';
 import AlertModal from '../Common/AlertModal';
+import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
 
 function Auth({ mode, onToggleMode, onSuccess, onBack }) {
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const data = await authApi.googleLogin(credentialResponse.credential);
+      if (data && (data.access || data.token || data.refresh || data.status === 'success')) {
+        onSuccess(data);
+      } else {
+        setError(data.message || data.error || 'Google login failed');
+      }
+    } catch (err) {
+      setError('Unable to connect to the server');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -269,10 +286,10 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
                   {isLoading ? 'Processing...' : (forgotStep === 1 ? 'Send OTP' : 'Reset Password')}
                 </button>
                 
-                <div className="auth-switch">
-                  <button type="button" onClick={() => { setIsForgotMode(false); setForgotStep(1); }} style={{ marginLeft: 0 }}>
+                <div className="forgot-back-link">
+                  <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotMode(false); setForgotStep(1); }}>
                     Back to Login
-                  </button>
+                  </a>
                 </div>
               </form>
             ) : (
@@ -405,15 +422,17 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
                 <div className="auth-divider">OR</div>
 
-                <button 
-                  type="button" 
-                  className="btn-google" 
-                  onClick={() => showAlert('Coming Soon', 'Google authentication is not configured yet.', 'info')}
-                  disabled={isLoading}
-                >
-                  <img src="/google-logo.png" alt="Google" className="google-icon" />
-                  {mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
-                </button>
+                <div className="google-login-container" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google Login Failed')}
+                    useOneTap
+                    theme="filled_black"
+                    shape="rectangular"
+                    width="440px"
+                    text={mode === 'login' ? 'signin_with' : 'signup_with'}
+                  />
+                </div>
               </form>
             )}
 
@@ -427,8 +446,17 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
 
             <div className="auth-switch">
-              <span>{mode === 'login' ? "Don't have an account?" : "Already have an account?"}</span>
-              <button onClick={onToggleMode}>{mode === 'login' ? 'Sign Up' : 'Login'}</button>
+              {isForgotMode ? (
+                <>
+                  <span>Don't have an account?</span>
+                  <button onClick={() => { setIsForgotMode(false); onToggleMode(); }}>Sign Up</button>
+                </>
+              ) : (
+                <>
+                  <span>{mode === 'login' ? "Don't have an account?" : "Already have an account?"}</span>
+                  <button onClick={onToggleMode}>{mode === 'login' ? 'Sign Up' : 'Login'}</button>
+                </>
+              )}
             </div>
           </div>
         </div>
