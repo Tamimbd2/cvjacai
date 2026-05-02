@@ -31,12 +31,15 @@ function JobManagement({ onBack, onPostJob, token }) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Expected JSON but received HTML or invalid text:', text.substring(0, 200));
         throw new Error('NOT_JSON');
       }
 
-      const data = await response.json();
       setJobs(Array.isArray(data) ? data : data.results || []);
       setError(null);
       setLoading(false);
