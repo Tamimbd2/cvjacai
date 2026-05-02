@@ -5,22 +5,26 @@ import AlertModal from '../Common/AlertModal';
 import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
 
 function Auth({ mode, onToggleMode, onSuccess, onBack }) {
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const data = await authApi.googleLogin(credentialResponse.credential);
-      if (data && (data.access || data.token || data.refresh || data.status === 'success')) {
-        onSuccess(data);
-      } else {
-        setError(data.message || data.error || 'Google login failed');
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      setError('');
+      try {
+        // tokenResponse.access_token is what we get here
+        const data = await authApi.googleLogin(tokenResponse.access_token);
+        if (data && (data.access || data.token || data.refresh || data.status === 'success')) {
+          onSuccess(data);
+        } else {
+          setError(data.message || data.error || 'Google login failed');
+        }
+      } catch (err) {
+        setError('Unable to connect to the server');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      setError('Unable to connect to the server');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onError: () => setError('Google Login Failed'),
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -422,17 +426,16 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
 
                 <div className="auth-divider">OR</div>
 
-                <div className="google-login-container" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => setError('Google Login Failed')}
-                    useOneTap
-                    theme="filled_black"
-                    shape="rectangular"
-                    width="440px"
-                    text={mode === 'login' ? 'signin_with' : 'signup_with'}
-                  />
-                </div>
+                <button 
+                  type="button" 
+                  className="btn-google" 
+                  onClick={() => handleGoogleLogin()}
+                  disabled={isLoading}
+                  style={{ width: '100%' }}
+                >
+                  <img src="/google-logo.png" alt="Google" className="google-icon" />
+                  {mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
+                </button>
               </form>
             )}
 
