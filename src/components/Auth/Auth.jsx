@@ -205,6 +205,18 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
                   mode === 'login' ? 'Login' : 'Sign Up'
                 )}
               </button>
+
+              <div className="auth-divider">OR</div>
+
+              <button 
+                type="button" 
+                className="btn-google" 
+                onClick={() => alert('Google authentication is not configured yet.')}
+                disabled={isLoading}
+              >
+                <img src="/google-logo.png" alt="Google" className="google-icon" />
+                {mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
+              </button>
             </form>
 
 
