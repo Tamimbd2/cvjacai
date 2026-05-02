@@ -29,6 +29,34 @@ export const authApi = {
     });
     return response.json();
   },
+  
+  requestOtp: async (email) => {
+    const response = await fetch(`${BASE_URL}/auth/otp/request/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+    return response.json();
+  },
+
+  resetPassword: async (email, otpCode, newPassword) => {
+    const response = await fetch(`${BASE_URL}/auth/reset-password/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ 
+        email, 
+        otp_code: otpCode, 
+        new_password: newPassword 
+      }),
+    });
+    return response.json();
+  },
 };
 
 export const resumeApi = {
