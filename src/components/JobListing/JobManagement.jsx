@@ -20,7 +20,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     try {
       if (attempt === 1) setLoading(true);
       setError(null);
-      const response = await fetch("/api/jobs/my/", {
+      const response = await fetch("https://cvjachai-api.onrender.com/api/jobs/my/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
 
@@ -65,7 +65,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     if (!window.confirm("Are you sure you want to delete this job?")) return;
     
     try {
-      const response = await fetch(`/api/jobs/${id}/delete/`, {
+      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${id}/delete/`, {
         method: "DELETE",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -90,7 +90,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     setSelectedJobId(jobId);
     setScreeningResults(null); // Clear previous screening results
     try {
-      const response = await fetch(`/api/jobs/${jobId}/applications/`, {
+      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/applications/`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to fetch applicants');
@@ -113,7 +113,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     if (applicants.length === 0) {
       setIsAnalyzing(true);
       try {
-        const response = await fetch(`/api/jobs/${jobId}/applications/`, {
+        const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/applications/`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await response.json();
@@ -133,7 +133,7 @@ function JobManagement({ onBack, onPostJob, token }) {
       const formData = new FormData();
       formData.append("top_k", topK.toString());
 
-      const response = await fetch(`/api/jobs/${jobId}/analyze/`, {
+      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/analyze/`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`,

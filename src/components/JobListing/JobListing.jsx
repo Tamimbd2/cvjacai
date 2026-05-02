@@ -27,7 +27,7 @@ function JobListing({ onBack, onCreateJob }) {
         redirect: "follow"
       };
 
-      const apiUrl = "/api/jobs/";
+      const apiUrl = "https://cvjachai-api.onrender.com/api/jobs/";
       console.log(`Fetching from API (attempt ${attempt}):`, apiUrl);
       const response = await fetch(apiUrl, requestOptions);
       console.log('Response status:', response.status);
@@ -166,7 +166,7 @@ function JobListing({ onBack, onCreateJob }) {
         redirect: "follow"
       };
 
-      const response = await fetch("/api/jobs/apply/", requestOptions);
+      const response = await fetch("https://cvjachai-api.onrender.com/api/jobs/apply/", requestOptions);
       
       if (!response.ok) {
         const errorResult = await response.json().catch(() => ({}));
