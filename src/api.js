@@ -1,4 +1,4 @@
-const BASE_URL = 'https://cvjachai-api.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://cvjachai.online/api';
 
 export const authApi = {
   signin: async (email, password) => {
@@ -95,4 +95,71 @@ export const resumeApi = {
     });
     return response.json();
   },
+};
+
+export const jobApi = {
+  getJobs: () => {
+    return fetch(`${BASE_URL}/jobs/`, {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      redirect: "follow"
+    });
+  },
+
+  getMyJobs: (token) => {
+    return fetch(`${BASE_URL}/jobs/my/`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+    });
+  },
+
+  createJob: (payload, token) => {
+    return fetch(`${BASE_URL}/jobs/`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    });
+  },
+
+  deleteJob: (id, token) => {
+    return fetch(`${BASE_URL}/jobs/${id}/delete/`, {
+      method: "DELETE",
+      headers: { 
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      }
+    });
+  },
+
+  getApplicants: (jobId, token) => {
+    return fetch(`${BASE_URL}/jobs/${jobId}/applications/`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+    });
+  },
+
+  analyzeApplicants: (jobId, formData, token) => {
+    return fetch(`${BASE_URL}/jobs/${jobId}/analyze/`, {
+      method: "POST",
+      headers: { 
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json"
+      },
+      body: formData
+    });
+  },
+
+  applyForJob: (formData) => {
+    return fetch(`${BASE_URL}/jobs/apply/`, {
+      method: "POST",
+      body: formData,
+      redirect: "follow"
+    });
+  }
 };
