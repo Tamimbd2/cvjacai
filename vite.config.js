@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://cvjachai-api.onrender.com',
+        target: 'https://cvjachai.online',
         changeOrigin: true,
         secure: false,
       }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Users, Trash2, Search, Plus, ChevronLeft, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { jobApi } from '../../api';
 
 function JobManagement({ onBack, onPostJob, token }) {
   const [activeTab, setActiveTab] = useState('my_jobs'); // 'my_jobs', 'applicants', 'screening'
@@ -20,9 +21,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     try {
       if (attempt === 1) setLoading(true);
       setError(null);
-      const response = await fetch("https://cvjachai-api.onrender.com/api/jobs/my/", {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+      const response = await jobApi.getMyJobs(token);
 
       if (!response.ok) {
         if (response.status === 504 || response.status === 502 || response.status === 503) {
@@ -65,13 +64,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     if (!window.confirm("Are you sure you want to delete this job?")) return;
     
     try {
-      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${id}/delete/`, {
-        method: "DELETE",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
+      const response = await jobApi.deleteJob(id, token);
       if (!response.ok) throw new Error('Failed to delete job');
       setShowDeleteSuccess(true);
       setJobs(jobs.filter(job => job.id !== id));
@@ -90,9 +83,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     setSelectedJobId(jobId);
     setScreeningResults(null); // Clear previous screening results
     try {
-      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/applications/`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+      const response = await jobApi.getApplicants(jobId, token);
       if (!response.ok) throw new Error('Failed to fetch applicants');
       const data = await response.json();
       setApplicants(Array.isArray(data) ? data : data.results || []);
@@ -113,9 +104,7 @@ function JobManagement({ onBack, onPostJob, token }) {
     if (applicants.length === 0) {
       setIsAnalyzing(true);
       try {
-        const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/applications/`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
+        const response = await jobApi.getApplicants(jobId, token);
         const data = await response.json();
         const appList = Array.isArray(data) ? data : data.results || [];
         setApplicants(appList);
@@ -133,14 +122,7 @@ function JobManagement({ onBack, onPostJob, token }) {
       const formData = new FormData();
       formData.append("top_k", topK.toString());
 
-      const response = await fetch(`https://cvjachai-api.onrender.com/api/jobs/${jobId}/analyze/`, {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json"
-        },
-        body: formData
-      });
+      const response = await jobApi.analyzeApplicants(jobId, formData, token);
 
       if (!response.ok) {
         const errorText = await response.text();

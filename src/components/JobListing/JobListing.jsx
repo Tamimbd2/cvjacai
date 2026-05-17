@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, DollarSign, Clock, ChevronLeft, Sparkles, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { jobApi } from '../../api';
 
 function JobListing({ onBack, onCreateJob }) {
   const [jobs, setJobs] = useState([]);
@@ -21,15 +22,8 @@ function JobListing({ onBack, onCreateJob }) {
     try {
       if (attempt === 1) setLoading(true);
       setError(null);
-      const requestOptions = {
-        method: "GET",
-        headers: { "Accept": "application/json" },
-        redirect: "follow"
-      };
-
-      const apiUrl = "https://cvjachai-api.onrender.com/api/jobs/";
-      console.log(`Fetching from API (attempt ${attempt}):`, apiUrl);
-      const response = await fetch(apiUrl, requestOptions);
+      console.log(`Fetching jobs from API (attempt ${attempt})...`);
+      const response = await jobApi.getJobs();
       console.log('Response status:', response.status);
 
       if (!response.ok) {
@@ -160,13 +154,7 @@ function JobListing({ onBack, onCreateJob }) {
       data.append("candidate_email", formData.email);
       data.append("resume_file", file);
 
-      const requestOptions = {
-        method: "POST",
-        body: data,
-        redirect: "follow"
-      };
-
-      const response = await fetch("https://cvjachai-api.onrender.com/api/jobs/apply/", requestOptions);
+      const response = await jobApi.applyForJob(data);
       
       if (!response.ok) {
         const errorResult = await response.json().catch(() => ({}));

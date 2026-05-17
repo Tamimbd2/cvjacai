@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Briefcase, MapPin, DollarSign, FileText, ChevronLeft, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { jobApi } from '../../api';
 
 function CreateJob({ onBack, token }) {
   const [loading, setLoading] = useState(false);
@@ -26,16 +27,10 @@ function CreateJob({ onBack, token }) {
     setError(null);
 
     try {
-      const myHeaders = new Headers();
-      // Ensure the token is handled correctly (sometimes it might be under 'access')
       const authToken = token;
-      
       if (!authToken) {
         throw new Error('Authentication token is missing. Please log in again.');
       }
-
-      myHeaders.append("Authorization", `Bearer ${authToken}`);
-      myHeaders.append("Content-Type", "application/json");
 
       // Prepare data, ensuring min_experience is a number as per API requirements
       const payload = {
@@ -43,15 +38,8 @@ function CreateJob({ onBack, token }) {
         min_experience: parseInt(formData.min_experience, 10) || 0
       };
 
-      const requestOptions = {
-        method: "POST",
-        headers: myHeaders,
-        body: JSON.stringify(payload),
-        redirect: "follow"
-      };
-
       console.log('Posting job to API...', payload);
-      const response = await fetch("/api/jobs/", requestOptions);
+      const response = await jobApi.createJob(payload, authToken);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
