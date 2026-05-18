@@ -30,13 +30,12 @@ function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onFindJ
               Powered by advanced AI
             </div>
             <h1>
-              AI Resume <br />
-              Analysis <br />
-              <span className="gradient-text">Platform</span>
+              CV Jachai <br />
+              Advanced CV Screening <br />
+              <span className="gradient-text">& HR Intelligence</span>
             </h1>
             <p className="hero-description">
-              Transform your hiring process with intelligent resume screening.
-              Analyze candidates instantly with precision and accuracy powered by next-gen AI.
+              Empower your HR team with CV Jachai. Experience lightning-fast candidate screening, automated qualification matching, and AI-driven hiring insights.
             </p>
             <div className="hero-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
               <button onClick={onStartShortlisting} className="btn-primary" style={{ border: 'none', cursor: 'pointer' }}>
