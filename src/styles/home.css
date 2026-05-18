@@ -206,3 +206,163 @@
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
+/* Hero Container Base */
+.hero-container {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+}
+
+/* Responsive Home Styles */
+@media (max-width: 992px) {
+    .hero-container {
+        gap: 40px;
+    }
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .trust-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .feature-card {
+        padding: 32px 24px;
+        border-radius: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 30px 0;
+        min-height: auto;
+    }
+    .hero-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+    .hero-description {
+        margin: 0 auto 24px;
+        font-size: 1rem;
+        line-height: 1.5;
+        padding: 0 10px;
+    }
+    .hero-btns {
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+    .btn-primary, .btn-secondary {
+        padding: 12px 22px !important;
+        font-size: 0.95rem !important;
+        border-radius: 12px;
+    }
+    .hero-stats {
+        justify-content: center;
+        gap: 24px;
+    }
+    .stat-item h3 {
+        font-size: 1.6rem;
+    }
+    .stat-item p {
+        font-size: 0.8rem;
+    }
+    .hero-image img {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+    .features-section {
+        padding: 40px 0;
+    }
+    .section-header {
+        margin-bottom: 32px;
+    }
+    .section-title {
+        font-size: 2rem !important;
+        margin-bottom: 10px;
+    }
+    .section-subtitle {
+        font-size: 1rem !important;
+    }
+
+    /* Minimalist Compact 2-Column Features Grid on Mobile */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+    .feature-card {
+        padding: 20px 14px;
+        border-radius: 20px;
+    }
+    .feature-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+    .feature-icon-wrapper svg {
+        width: 20px;
+        height: 20px;
+    }
+    .feature-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    .feature-card p {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .trust-section {
+        padding: 40px 0;
+    }
+    /* Minimalist Compact 2x2 Trust Grid on Mobile */
+    .trust-grid {
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 14px;
+        margin: 32px 0;
+    }
+    .trust-card {
+        padding: 20px 16px;
+        border-radius: 20px;
+        text-align: center;
+    }
+    .trust-card .icon-small {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: center;
+    }
+    .trust-card h2 {
+        font-size: 1.6rem;
+        margin: 4px 0;
+    }
+    .trust-card p {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-btns {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .hero-btns button {
+        flex: 1 1 140px;
+        justify-content: center;
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+    .hero-stats {
+        gap: 16px;
+    }
+    .stat-item h3 {
+        font-size: 1.4rem;
+    }
+    .stat-item p {
+        font-size: 0.75rem;
+    }
+}

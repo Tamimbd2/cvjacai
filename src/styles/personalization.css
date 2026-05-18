@@ -276,3 +276,40 @@
     font-size: 0.95rem;
     line-height: 1.5;
 }
+
+/* Responsive Personalization Styles */
+@media (max-width: 768px) {
+    .stats-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .upload-box {
+        padding: 24px 16px;
+    }
+    .analysis-score-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 28px 20px;
+        gap: 24px;
+    }
+    .tag-row {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .job-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 16px;
+    }
+    .improvement-item {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .imp-content h4 {
+        flex-wrap: wrap;
+    }
+    .analysis-section {
+        padding: 24px 16px;
+    }
+}

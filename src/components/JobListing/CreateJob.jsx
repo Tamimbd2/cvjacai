@@ -147,17 +147,8 @@ function CreateJob({ onBack, token }) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ 
-          background: 'rgba(255, 255, 255, 0.03)', 
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '32px',
-          padding: '40px',
-          backdropFilter: 'blur(20px)',
-          display: 'grid',
-          gap: '30px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-        }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
+        <form onSubmit={handleSubmit} className="form-container-card">
+          <div className="form-row-grid">
             <div className="input-group">
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', fontSize: '1rem', color: 'rgba(255, 255, 255, 0.8)', fontWeight: '600' }}>
                 <Briefcase size={18} color="var(--accent-cyan)" />
@@ -190,7 +181,7 @@ function CreateJob({ onBack, token }) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
+          <div className="form-row-grid">
             <div className="input-group">
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', fontSize: '1rem', color: 'rgba(255, 255, 255, 0.8)', fontWeight: '600' }}>
                 <MapPin size={18} color="var(--accent-cyan)" />
@@ -267,7 +258,7 @@ function CreateJob({ onBack, token }) {
             className="btn-primary" 
             style={{ 
               marginTop: '10px',
-              justifyContent: 'center',
+              justify: 'center',
               padding: '18px',
               fontSize: '1.2rem',
               fontWeight: '700',
@@ -293,6 +284,51 @@ function CreateJob({ onBack, token }) {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Form Classes */
+        .form-container-card {
+          background: rgba(255, 255, 255, 0.03); 
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 32px;
+          padding: 40px;
+          backdrop-filter: blur(20px);
+          display: grid;
+          gap: 30px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-row-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+          .create-job-container {
+            padding: 30px 16px !important;
+          }
+          .header h1 {
+            font-size: 2.5rem !important;
+          }
+          .form-container-card {
+            padding: 24px 20px !important;
+            border-radius: 24px !important;
+            gap: 20px !important;
+          }
+          .form-row-grid {
+            grid-template-columns: 1fr !important; /* Force single column on mobile */
+            gap: 20px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .header h1 {
+            font-size: 2.2rem !important;
+          }
+          .input-group label {
+            font-size: 0.95rem !important;
+          }
         }
       `}</style>
     </div>

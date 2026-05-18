@@ -310,3 +310,36 @@
 .skill-chip:empty {
     display: none;
 }
+
+/* Responsive Results Styles */
+@media (max-width: 768px) {
+    .candidate-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 24px 20px;
+    }
+    .candidate-meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .candidate-pct {
+        border-bottom: 1px solid var(--card-border);
+        padding-bottom: 16px;
+        width: 100%;
+    }
+    .candidate-icon {
+        margin: 0 auto 10px;
+    }
+    .btn-download {
+        width: 100%;
+        justify-content: center;
+    }
+    .results-footer {
+        flex-direction: column;
+        gap: 16px;
+    }
+    .btn-outline {
+        width: 100%;
+    }
+}

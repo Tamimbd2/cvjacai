@@ -250,66 +250,24 @@ function JobListing({ onBack, onCreateJob }) {
                   key={job.id} 
                   className={`job-card ${isExpanded ? 'expanded' : ''}`}
                   onClick={() => toggleExpand(job.id)}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: `1px solid ${isExpanded ? 'rgba(34, 211, 238, 0.3)' : 'rgba(255, 255, 255, 0.08)'}`,
-                    borderRadius: '20px',
-                    padding: '28px',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    cursor: 'pointer',
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '24px'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isExpanded) {
-                      e.currentTarget.style.transform = 'translateY(-5px)';
-                      e.currentTarget.style.borderColor = 'rgba(34, 211, 238, 0.3)';
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isExpanded) {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }
-                  }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                      <div style={{ 
-                        width: '64px', 
-                        height: '64px', 
-                        borderRadius: '16px', 
-                        background: `linear-gradient(135deg, ${jobColor} 0%, rgba(0,0,0,0.3) 100%)`, 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center',
-                        fontSize: '1.6rem',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        boxShadow: `0 8px 16px ${jobColor}33`
-                      }}>
+                  <div className="job-card-header">
+                    <div className="job-card-main">
+                      <div className="job-card-logo" style={{ background: `linear-gradient(135deg, ${jobColor} 0%, rgba(0,0,0,0.3) 100%)`, boxShadow: `0 8px 16px ${jobColor}33` }}>
                         {jobLogo}
                       </div>
-                      <div>
-                        <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', fontWeight: '700', color: '#fff' }}>{job.title}</h3>
-                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                      <div className="job-card-info">
+                        <h3>{job.title}</h3>
+                        <div className="job-meta-row">
+                          <div className="job-meta-item">
                             <Briefcase size={16} color="var(--accent-cyan)" />
                             {job.company_name}
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                          <div className="job-meta-item">
                             <MapPin size={16} color="var(--accent-cyan)" />
                             {job.location}
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                          <div className="job-meta-item">
                             <DollarSign size={16} color="var(--accent-cyan)" />
                             {job.min_experience}+ Years Exp.
                           </div>
@@ -317,20 +275,19 @@ function JobListing({ onBack, onCreateJob }) {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '18px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '0.85rem', background: 'rgba(255, 255, 255, 0.08)', padding: '6px 14px', borderRadius: '8px', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500' }}>
+                    <div className="job-card-actions">
+                      <div className="job-status-row">
+                        <span className="job-badge-status">
                           {job.is_active ? 'Active' : 'Closed'}
                         </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.4)' }}>
+                        <div className="job-time">
                           <Clock size={14} />
                           {postedTime}
                         </div>
                       </div>
                       {!isExpanded && (
                         <button 
-                          className="btn-primary" 
-                          style={{ border: 'none', cursor: 'pointer', padding: '12px 28px', fontSize: '1rem', borderRadius: '10px' }}
+                          className="btn-primary btn-apply-card" 
                           onClick={(e) => handleApplyClick(e, job)}
                         >
                           Apply Now
@@ -592,6 +549,196 @@ function JobListing({ onBack, onCreateJob }) {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        /* Clean Modular Classes for Job Listing */
+        .job-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 20px;
+          padding: 28px;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .job-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(34, 211, 238, 0.3);
+          background: rgba(255, 255, 255, 0.05);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .job-card.expanded {
+          border-color: rgba(34, 211, 238, 0.3);
+        }
+
+        .job-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 24px;
+        }
+
+        .job-card-main {
+          display: flex;
+          gap: 24px;
+          align-items: center;
+        }
+
+        .job-card-logo {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 1.6rem;
+          font-weight: bold;
+          color: white;
+          flex-shrink: 0;
+        }
+
+        .job-card-info h3 {
+          font-size: 1.5rem;
+          margin-bottom: 8px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .job-meta-row {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+
+        .job-meta-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.95rem;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .job-card-actions {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 18px;
+          flex-shrink: 0;
+        }
+
+        .job-status-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .job-badge-status {
+          font-size: 0.85rem;
+          background: rgba(255, 255, 255, 0.08);
+          padding: 6px 14px;
+          border-radius: 8px;
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 500;
+        }
+
+        .job-time {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-apply-card {
+          border: none;
+          cursor: pointer;
+          padding: 12px 28px;
+          font-size: 1rem;
+          border-radius: 10px;
+        }
+
+        /* Mobile & Tablet Responsiveness */
+        @media (max-width: 768px) {
+          .job-listing-container {
+            padding: 30px 16px !important;
+          }
+          .header h1 {
+            font-size: 2.4rem !important;
+          }
+          .job-card {
+            padding: 24px 20px;
+            gap: 20px;
+          }
+          .job-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+          }
+          .job-card-main {
+            gap: 16px;
+            width: 100%;
+          }
+          .job-card-logo {
+            width: 52px;
+            height: 52px;
+            font-size: 1.3rem;
+            border-radius: 14px;
+          }
+          .job-card-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+          }
+          .job-meta-row {
+            gap: 12px;
+          }
+          .job-meta-item {
+            font-size: 0.85rem;
+          }
+          .job-card-actions {
+            width: 100%;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+          }
+          .btn-apply-card {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+          }
+          .job-details button {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+            padding: 12px !important;
+            font-size: 0.95rem !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .header h1 {
+            font-size: 2rem !important;
+          }
+          .job-card-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+          }
+          .job-status-row {
+            justify-content: space-between;
+          }
+          .btn-apply-card {
+            width: 100%;
+            justify-content: center;
+          }
+          .job-details {
+            padding-top: 16px !important;
+          }
         }
       `}</style>
     </div>
