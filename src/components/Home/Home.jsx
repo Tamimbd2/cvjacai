@@ -79,7 +79,7 @@ function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onFindJ
             </div>
           </div>
           <div className="hero-image">
-            <img src="/Assets/Container.svg" alt="AI Resume Analysis Visualization" />
+            <img src="/assets/Container.svg" alt="AI Resume Analysis Visualization" />
           </div>
         </div>
       </header>
