@@ -532,3 +532,10 @@
         flex-wrap: wrap;
     }
 }
+
+@media (max-width: 576px) {
+    .btn-google {
+        width: 80%;
+        margin: 0 auto;
+    }
+}
