@@ -23,7 +23,7 @@ function Home({ isLoggedIn, onStartShortlisting, onStartPersonalization, onFindJ
     <>
       {/* Hero Section */}
       <header className="hero">
-        <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px' }}>
+        <div className="container hero-container">
           <div className="hero-content">
             <div className="badge">
               <Zap className="badge-icon" />

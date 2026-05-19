@@ -3,7 +3,7 @@ import { Briefcase, Users, Trash2, Search, Plus, ChevronLeft, Loader2, CheckCirc
 import { jobApi } from '../../api';
 
 function JobManagement({ onBack, onPostJob, token }) {
-  const [activeTab, setActiveTab] = useState('my_jobs'); // 'my_jobs', 'applicants', 'screening'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'my_jobs', 'applicants', 'screening'
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -148,17 +148,18 @@ function JobManagement({ onBack, onPostJob, token }) {
         <div>
           <button
             onClick={() => { setSelectedJobId(null); setScreeningResults(null); }}
-            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: '20px' }}
+            className="btn-back-custom"
+            style={{ fontSize: '0.9rem', marginBottom: '20px' }}
           >
             <ChevronLeft size={16} /> Select Different Job
           </button>
 
-          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div className="tab-header-row">
             <div>
               <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>AI Screening: {job?.title}</h3>
               <p style={{ color: 'rgba(255,255,255,0.5)' }}>Our AI will rank applicants based on their match with the job description.</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div className="action-group">
               <div style={{ textAlign: 'right' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '5px' }}>Top Candidates</label>
                 <select 
@@ -196,7 +197,7 @@ function JobManagement({ onBack, onPostJob, token }) {
           </div>
 
           {isAnalyzing ? (
-            <div style={{ textAlign: 'center', padding: '100px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
+            <div style={{ textAlign: 'center', padding: '100px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
               <div className="loader-orbit" style={{ width: '80px', height: '80px', margin: '0 auto 30px' }}></div>
               <h3 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Analyzing Resumes</h3>
               <p style={{ color: 'rgba(255,255,255,0.5)' }}>Comparing applicant profiles with job requirements using advanced NLP...</p>
@@ -204,20 +205,10 @@ function JobManagement({ onBack, onPostJob, token }) {
           ) : screeningResults ? (
             <div style={{ display: 'grid', gap: '20px' }}>
               {screeningResults.length === 0 ? (
-                <div key="no-results" style={{ textAlign: 'center', padding: '60px' }}>No candidates meet the criteria or no applicants found.</div>
+                <div key="no-results" style={{ textAlign: 'center', padding: '60px 20px' }}>No candidates meet the criteria or no applicants found.</div>
               ) : (
                 screeningResults.map((result, index) => (
-                  <div key={`rank-${result.id || index}`} style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    padding: '30px',
-                    borderRadius: '24px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
+                  <div key={`rank-${result.id || index}`} className="screen-result-card">
                     {/* Rank Badge */}
                     <div style={{
                       position: 'absolute',
@@ -237,7 +228,7 @@ function JobManagement({ onBack, onPostJob, token }) {
                       <h4 style={{ fontSize: '1.5rem', marginBottom: '5px' }}>{result.candidate_name || result.name}</h4>
                       <p style={{ color: 'rgba(255,255,255,0.6)' }}>{result.candidate_email || result.email}</p>
                       
-                      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '15px', flexWrap: 'wrap' }}>
                         <div style={{ background: 'rgba(0,255,242,0.05)', color: 'var(--accent-cyan)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600' }}>
                           Score: {Math.round((result.score || result.match_score || 0) * 100)}%
                         </div>
@@ -249,7 +240,7 @@ function JobManagement({ onBack, onPostJob, token }) {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                       <div style={{ 
                         width: '60px', 
                         height: '60px', 
@@ -269,7 +260,7 @@ function JobManagement({ onBack, onPostJob, token }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-secondary"
-                        style={{ padding: '8px 16px', fontSize: '0.85rem', borderRadius: '8px', textDecoration: 'none' }}
+                        style={{ padding: '10px 20px', fontSize: '0.9rem', borderRadius: '10px', textDecoration: 'none', display: 'inline-block' }}
                       >
                         View Profile
                       </a>
@@ -279,7 +270,7 @@ function JobManagement({ onBack, onPostJob, token }) {
               )}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '80px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
               <Search size={48} style={{ marginBottom: '20px', opacity: 0.3 }} />
               <h3>Ready for Screening</h3>
               <p style={{ maxWidth: '400px', margin: '0 auto' }}>Click the button above to start the AI-powered analysis of all applicants for this position.</p>
@@ -291,27 +282,26 @@ function JobManagement({ onBack, onPostJob, token }) {
 
     return (
       <div style={{ display: 'grid', gap: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div className="tab-header-row" style={{ marginBottom: '10px' }}>
           <h3 style={{ fontSize: '1.5rem', margin: 0 }}>Select a job for AI Screening</h3>
           <button
             onClick={() => setActiveTab('dashboard')}
-            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: 0 }}
+            className="btn-back-custom"
+            style={{ fontSize: '0.9rem', marginBottom: 0 }}
           >
             Back to Dashboard
           </button>
         </div>
         {jobs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px' }}>No jobs found. Post a job first!</div>
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>No jobs found. Post a job first!</div>
         ) : (
           jobs.map(job => (
             <div
               key={`screen-job-${job.id}`}
               onClick={() => setSelectedJobId(job.id)}
-              style={{ ...cardStyle, padding: '30px', flexDirection: 'row', justifyContent: 'space-between', gap: '0' }}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="job-select-card"
             >
-              <div style={{ textAlign: 'left' }}>
+              <div>
                 <h4 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '5px' }}>{job.title}</h4>
                 <p style={{ color: 'rgba(255,255,255,0.4)' }}>{job.location} • {job.company_name}</p>
               </div>
@@ -336,12 +326,13 @@ function JobManagement({ onBack, onPostJob, token }) {
         <div>
           <button
             onClick={() => { setSelectedJobId(null); setApplicants([]); }}
-            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: '20px' }}
+            className="btn-back-custom"
+            style={{ fontSize: '0.9rem', marginBottom: '20px' }}
           >
             <ChevronLeft size={16} /> Back to Job List
           </button>
 
-          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="tab-header-row">
             <div>
               <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>Applicants for {job?.title}</h3>
               <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage and screen candidates for this position.</p>
@@ -349,7 +340,6 @@ function JobManagement({ onBack, onPostJob, token }) {
             <button 
               onClick={() => {
                 setActiveTab('screening');
-                // setSelectedJobId remains the same
               }}
               className="btn-primary"
               style={{ padding: '12px 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -359,9 +349,9 @@ function JobManagement({ onBack, onPostJob, token }) {
           </div>
 
           {loadingApplicants ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}><Loader2 className="animate-spin" size={40} /></div>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 20px' }}><Loader2 className="animate-spin" size={40} /></div>
           ) : applicants.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
+            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
               <Users size={48} style={{ marginBottom: '20px', opacity: 0.3 }} />
               <h3>No applications yet</h3>
               <p>Applications for this job will appear here.</p>
@@ -369,15 +359,7 @@ function JobManagement({ onBack, onPostJob, token }) {
           ) : (
             <div style={{ display: 'grid', gap: '15px' }}>
               {applicants.map(app => (
-                <div key={`app-${app.id}`} style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  padding: '20px',
-                  borderRadius: '16px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
+                <div key={`app-${app.id}`} className="app-item-card">
                   <div>
                     <h4 style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{app.candidate_name}</h4>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>{app.candidate_email}</p>
@@ -391,7 +373,7 @@ function JobManagement({ onBack, onPostJob, token }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-secondary"
-                      style={{ padding: '8px 16px', fontSize: '0.9rem', borderRadius: '8px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      style={{ padding: '10px 20px', fontSize: '0.9rem', borderRadius: '10px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
                       <Plus size={16} /> View Resume
                     </a>
@@ -406,27 +388,26 @@ function JobManagement({ onBack, onPostJob, token }) {
 
     return (
       <div style={{ display: 'grid', gap: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div className="tab-header-row" style={{ marginBottom: '10px' }}>
           <h3 style={{ fontSize: '1.5rem', margin: 0 }}>Select a job to view applicants</h3>
           <button
             onClick={() => setActiveTab('dashboard')}
-            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: 0 }}
+            className="btn-back-custom"
+            style={{ fontSize: '0.9rem', marginBottom: 0 }}
           >
             Back to Dashboard
           </button>
         </div>
         {jobs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px' }}>No jobs found. Post a job first!</div>
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>No jobs found. Post a job first!</div>
         ) : (
           jobs.map(job => (
             <div
               key={`app-job-${job.id}`}
               onClick={() => fetchApplicants(job.id)}
-              style={{ ...cardStyle, padding: '30px', flexDirection: 'row', justifyContent: 'space-between', gap: '0' }}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="job-select-card"
             >
-              <div style={{ textAlign: 'left' }}>
+              <div>
                 <h4 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '5px' }}>{job.title}</h4>
                 <p style={{ color: 'rgba(255,255,255,0.4)' }}>{job.location} • {job.company_name}</p>
               </div>
@@ -447,23 +428,24 @@ function JobManagement({ onBack, onPostJob, token }) {
   const renderMyJobsTab = () => {
     return (
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div className="tab-header-row">
           <div>
             <h3 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>My Job Listings</h3>
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Manage your active and closed job postings.</p>
           </div>
           <button 
             onClick={() => setActiveTab('dashboard')}
-            style={{ ...backButtonStyle, fontSize: '0.9rem', marginBottom: 0 }}
+            className="btn-back-custom"
+            style={{ fontSize: '0.9rem', marginBottom: 0 }}
           >
             Back to Dashboard
           </button>
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}><Loader2 className="animate-spin" size={40} /></div>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 20px' }}><Loader2 className="animate-spin" size={40} /></div>
         ) : jobs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
+          <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '24px' }}>
             <Briefcase size={48} style={{ marginBottom: '20px', opacity: 0.3 }} />
             <h3>No jobs found</h3>
             <p>You haven't posted any jobs yet.</p>
@@ -471,19 +453,11 @@ function JobManagement({ onBack, onPostJob, token }) {
         ) : (
           <div style={{ display: 'grid', gap: '15px' }}>
             {jobs.map(job => (
-              <div key={`myjob-${job.id}`} style={{ 
-                background: 'rgba(255,255,255,0.02)', 
-                border: '1px solid rgba(255,255,255,0.05)', 
-                padding: '25px', 
-                borderRadius: '20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
+              <div key={`myjob-${job.id}`} className="myjob-item-card">
                 <div>
                   <h4 style={{ fontSize: '1.3rem', marginBottom: '5px' }}>{job.title}</h4>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.95rem' }}>{job.location} • {job.company_name}</p>
-                  <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '4px 10px', borderRadius: '100px' }}>
                       {job.is_active ? 'Active' : 'Closed'}
                     </span>
@@ -495,7 +469,7 @@ function JobManagement({ onBack, onPostJob, token }) {
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button 
                     onClick={() => deleteJob(job.id)}
-                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '10px', borderRadius: '12px', cursor: 'pointer' }}
+                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '12px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     title="Delete Job"
                   >
                     <Trash2 size={20} />
@@ -523,82 +497,65 @@ function JobManagement({ onBack, onPostJob, token }) {
   return (
     <div className="job-mgmt-container" style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'white', padding: '60px 20px' }}>
       <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <button onClick={handleGlobalBack} style={backButtonStyle}>
+        <button onClick={handleGlobalBack} className="btn-back-custom">
           <ChevronLeft size={24} /> Back {activeTab === 'dashboard' ? 'to Home' : 'to Dashboard'}
         </button>
 
         <div className="mgmt-header" style={{ marginBottom: '60px' }}>
-          <h1 style={{ fontSize: '4rem', fontWeight: '900', letterSpacing: '-2px', marginBottom: '15px', lineHeight: '1' }}>
+          <h1>
             Job <span className="gradient-text">Management</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.4rem' }}>Unified dashboard for all your recruitment needs.</p>
+          <p>Unified dashboard for all your recruitment needs.</p>
         </div>
 
         {activeTab === 'dashboard' ? (
-          <div className="mgmt-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
-            gap: '20px', 
-            perspective: '1000px'
-          }}>
+          <div className="mgmt-grid">
             {/* Create Job Card */}
             <div 
               onClick={onPostJob}
-              className="mgmt-card"
-              style={cardStyle}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="dash-card"
             >
-              <div style={{ ...iconWrapperStyle, background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+              <div className="dash-card-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                 <Plus size={48} strokeWidth={2.5} />
               </div>
-              <h2 style={cardTitleStyle}>Create Job</h2>
-              <p style={cardSubtitleStyle}>Post new openings.</p>
+              <h2 className="dash-card-title">Create Job</h2>
+              <p className="dash-card-subtitle">Post new openings.</p>
             </div>
 
             {/* My Jobs Card */}
             <div 
-              className="mgmt-card"
               onClick={() => setActiveTab('my_jobs')}
-              style={cardStyle}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="dash-card"
             >
-              <div style={{ ...iconWrapperStyle, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+              <div className="dash-card-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                 <Briefcase size={48} strokeWidth={2.5} />
               </div>
-              <h2 style={cardTitleStyle}>My Jobs</h2>
-              <p style={cardSubtitleStyle}>Manage your posts.</p>
+              <h2 className="dash-card-title">My Jobs</h2>
+              <p className="dash-card-subtitle">Manage your posts.</p>
             </div>
 
             {/* Applicants Card */}
             <div 
-              className="mgmt-card"
               onClick={() => setActiveTab('applicants')}
-              style={cardStyle}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="dash-card"
             >
-              <div style={{ ...iconWrapperStyle, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+              <div className="dash-card-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                 <Users size={48} strokeWidth={2.5} />
               </div>
-              <h2 style={cardTitleStyle}>Applicants</h2>
-              <p style={cardSubtitleStyle}>View applications.</p>
+              <h2 className="dash-card-title">Applicants</h2>
+              <p className="dash-card-subtitle">View applications.</p>
             </div>
 
             {/* Screening Card */}
             <div 
-              className="mgmt-card"
               onClick={() => setActiveTab('screening')}
-              style={cardStyle}
-              onMouseEnter={(e) => applyHover(e, true)}
-              onMouseLeave={(e) => applyHover(e, false)}
+              className="dash-card"
             >
-              <div style={{ ...iconWrapperStyle, background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
+              <div className="dash-card-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
                 <Search size={48} strokeWidth={2.5} />
               </div>
-              <h2 style={cardTitleStyle}>Screening</h2>
-              <p style={cardSubtitleStyle}>AI shortlisting.</p>
+              <h2 className="dash-card-title">Screening</h2>
+              <p className="dash-card-subtitle">AI shortlisting.</p>
             </div>
           </div>
         ) : activeTab === 'my_jobs' ? renderMyJobsTab() : activeTab === 'screening' ? renderScreeningTab() : renderApplicantsTab()}
@@ -632,9 +589,6 @@ function JobManagement({ onBack, onPostJob, token }) {
           from { transform: translate(-50%, -100px); opacity: 0; }
           to { transform: translate(-50%, 0); opacity: 1; }
         }
-        .mgmt-card {
-          transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
         .loader-orbit {
           border: 4px solid rgba(255, 255, 255, 0.1);
           border-top: 4px solid var(--accent-cyan);
@@ -660,76 +614,284 @@ function JobManagement({ onBack, onPostJob, token }) {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+
+        /* Clean Modular Classes for Job Management */
+        .btn-back-custom {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: none;
+          border: none;
+          color: var(--accent-cyan);
+          cursor: pointer;
+          font-size: 1.2rem;
+          margin-bottom: 40px;
+          font-weight: 600;
+          padding: 0;
+          font-family: inherit;
+          transition: color 0.3s;
+        }
+        .btn-back-custom:hover {
+          color: white;
+        }
+
+        .mgmt-header h1 {
+          font-size: 4rem;
+          font-weight: 900;
+          letter-spacing: -2px;
+          margin-bottom: 15px;
+          line-height: 1;
+        }
+        .mgmt-header p {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 1.4rem;
+        }
+
+        .dash-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 40px;
+          padding: 60px 40px;
+          cursor: pointer;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 25px;
+          backdrop-filter: blur(20px);
+          transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .dash-card:hover {
+          transform: translateY(-15px) scale(1.02);
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .dash-card-icon {
+          width: 120px;
+          height: 120px;
+          border-radius: 35px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 10px;
+          transition: all 0.3s;
+        }
+
+        .dash-card-title {
+          font-size: 2.2rem;
+          font-weight: 800;
+          margin: 0;
+          letter-spacing: -1px;
+        }
+
+        .dash-card-subtitle {
+          font-size: 1.1rem;
+          color: rgba(255, 255, 255, 0.4);
+          margin: 0;
+          line-height: 1.6;
+        }
+
+        .job-select-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 30px;
+          padding: 30px;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          backdrop-filter: blur(20px);
+          transition: all 0.3s ease;
+        }
+        .job-select-card:hover {
+          transform: translateY(-5px);
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: 30px;
+          gap: 20px;
+        }
+
+        .screen-result-card, .app-item-card, .myjob-item-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 25px 30px;
+          border-radius: 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s;
+        }
+        .screen-result-card:hover, .app-item-card:hover, .myjob-item-card:hover {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(34, 211, 238, 0.3);
+        }
+
+        .action-group {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .mgmt-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 20px;
+          perspective: 1000px;
+        }
+
+        /* Mobile & Tablet Responsiveness */
+        @media (max-width: 992px) {
+          .dash-card {
+            padding: 40px 24px;
+            gap: 20px;
+            border-radius: 32px;
+          }
+          .dash-card-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 28px;
+          }
+          .dash-card-title {
+            font-size: 1.8rem;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .job-mgmt-container {
+            padding: 30px 16px !important;
+          }
+          .mgmt-header {
+            margin-bottom: 40px !important;
+          }
+          .mgmt-header h1 {
+            font-size: 2.6rem;
+          }
+          .mgmt-header p {
+            font-size: 1.1rem;
+          }
+          .btn-back-custom {
+            font-size: 1rem;
+            margin-bottom: 24px;
+          }
+          .dash-card {
+            padding: 32px 20px;
+            border-radius: 24px;
+            gap: 16px;
+          }
+          .dash-card-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+          }
+          .dash-card-title {
+            font-size: 1.5rem;
+          }
+          .dash-card-subtitle {
+            font-size: 0.95rem;
+          }
+
+          /* Tab layouts */
+          .tab-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+          .tab-header-row > div {
+            width: 100%;
+          }
+          .tab-header-row h3 {
+            font-size: 1.5rem !important;
+          }
+          .action-group {
+            width: 100%;
+            justify-content: space-between;
+          }
+          .action-group button {
+            flex: 1;
+            justify-content: center;
+          }
+
+          .job-select-card {
+            padding: 20px;
+            border-radius: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+          .job-select-card > div:last-child {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .screen-result-card, .app-item-card, .myjob-item-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 24px 20px;
+            border-radius: 20px;
+          }
+          .screen-result-card > div:last-child, 
+          .app-item-card > div:last-child, 
+          .myjob-item-card > div:last-child {
+            width: 100%;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .screen-result-card .btn-secondary, 
+          .app-item-card .btn-secondary {
+            text-align: center;
+            flex: 1;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .mgmt-grid {
+            grid-template-columns: repeat(2, 1fr); /* Force 2x2 beautiful compact grid on mobile */
+            gap: 12px;
+          }
+          .dash-card {
+            padding: 20px 12px;
+            border-radius: 20px;
+            gap: 10px;
+          }
+          .dash-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            margin-bottom: 5px;
+          }
+          .dash-card-icon svg {
+            width: 24px;
+            height: 24px;
+          }
+          .dash-card-title {
+            font-size: 1.15rem;
+            letter-spacing: 0;
+          }
+          .dash-card-subtitle {
+            font-size: 0.8rem;
+            line-height: 1.3;
+          }
+          .mgmt-header h1 {
+            font-size: 2.2rem;
+          }
+        }
       `}</style>
     </div>
   );
-};
-
-const applyHover = (e, isEnter) => {
-  const card = e.currentTarget;
-  if (isEnter) {
-    card.style.transform = 'translateY(-15px) scale(1.02)';
-    card.style.background = 'rgba(255, 255, 255, 0.05)';
-    card.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-    card.style.boxShadow = '0 30px 60px rgba(0, 0, 0, 0.5)';
-  } else {
-    card.style.transform = 'translateY(0) scale(1)';
-    card.style.background = 'rgba(255, 255, 255, 0.02)';
-    card.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-    card.style.boxShadow = 'none';
-  }
-};
-
-const backButtonStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  background: 'none',
-  border: 'none',
-  color: 'var(--accent-cyan)',
-  cursor: 'pointer',
-  fontSize: '1.2rem',
-  marginBottom: '40px',
-  fontWeight: '600'
-};
-
-const cardStyle = {
-  background: 'rgba(255, 255, 255, 0.02)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: '40px',
-  padding: '60px 40px',
-  cursor: 'pointer',
-  textAlign: 'center',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '25px',
-  backdropFilter: 'blur(20px)'
-};
-
-const iconWrapperStyle = {
-  width: '120px',
-  height: '120px',
-  borderRadius: '35px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: '10px',
-  transition: 'all 0.3s'
-};
-
-const cardTitleStyle = {
-  fontSize: '2.2rem',
-  fontWeight: '800',
-  margin: 0,
-  letterSpacing: '-1px'
-};
-
-const cardSubtitleStyle = {
-  fontSize: '1.1rem',
-  color: 'rgba(255, 255, 255, 0.4)',
-  margin: 0,
-  lineHeight: '1.6'
 };
 
 export default JobManagement;

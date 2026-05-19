@@ -509,3 +509,26 @@
     width: 20px;
     height: 20px;
 }
+
+/* Responsive Auth Styles */
+@media (max-width: 992px) {
+    .auth-main {
+        flex-direction: column;
+    }
+    .auth-right {
+        display: none; /* Hide visual on smaller screens to prioritize login form */
+    }
+    .auth-left {
+        padding: 40px 20px;
+    }
+    .auth-footer-modern {
+        flex-direction: column;
+        gap: 20px;
+        padding: 24px 20px;
+        text-align: center;
+    }
+    .footer-right-modern {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
