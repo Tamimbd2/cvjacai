@@ -112,10 +112,6 @@ function Optimization({ onBack, onAnalyze, onStartAnalysis, token }) {
 
           <div className="stats-row" style={{ marginTop: '40px' }}>
             <div className="mini-stat-card">
-              <h3>95%</h3>
-              <p>Accuracy Rate</p>
-            </div>
-            <div className="mini-stat-card">
               <h3>ATS-Ready</h3>
               <p>Format Check</p>
             </div>

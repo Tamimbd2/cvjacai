@@ -131,8 +131,11 @@ function JobManagement({ onBack, onPostJob, token }) {
       }
 
       const data = await response.json();
-      console.log('Screening results received successfully');
-      setScreeningResults(data.rankings || data);
+      console.log('Screening results received successfully', data);
+      
+      // Extract the array of candidates from the API response
+      const resultsArray = data.top_candidates || data.rankings || (Array.isArray(data) ? data : []);
+      setScreeningResults(resultsArray);
     } catch (err) {
       console.error('Screening error:', err);
       alert("AI Screening Failed: " + err.message);

@@ -429,7 +429,7 @@ function Auth({ mode, onToggleMode, onSuccess, onBack }) {
                     useOneTap
                     theme="filled_black"
                     shape="rectangular"
-                    width="440px"
+                    width="340"
                     text={mode === 'login' ? 'signin_with' : 'signup_with'}
                   />
                 </div>
