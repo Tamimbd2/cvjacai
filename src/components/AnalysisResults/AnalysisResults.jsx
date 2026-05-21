@@ -25,6 +25,7 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
     .join('\n');
   const engine = data?.optimization_engine || "AI Core";
   const disclaimer = data?.disclaimer || "Please review for accuracy.";
+  const recommendation = data?.recommendation || "";
 
   const handlePrint = () => {
     window.print();
@@ -212,6 +213,70 @@ function AnalysisResults({ onBack, onBackToHome, data }) {
             Export PNG
           </button>
         </div>
+
+        {recommendation && (
+          <div className="recommendation-card" style={{
+            background: 'rgba(34, 211, 238, 0.03)',
+            border: '1px solid rgba(34, 211, 238, 0.15)',
+            borderRadius: '16px',
+            padding: '24px 30px',
+            maxWidth: '860px',
+            margin: '0 auto 30px auto',
+            textAlign: 'left',
+            display: 'flex',
+            gap: '20px',
+            alignItems: 'flex-start',
+            boxShadow: '0 10px 30px -10px rgba(34, 211, 238, 0.15)',
+            backdropFilter: 'blur(10px)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, rgba(34, 211, 238, 0.05) 0%, transparent 100%)',
+              zIndex: -1
+            }} />
+            
+            <div style={{
+              background: 'rgba(34, 211, 238, 0.1)',
+              color: 'var(--accent-cyan)',
+              padding: '12px',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Sparkles size={24} style={{ filter: 'drop-shadow(0 0 4px var(--accent-cyan))' }} />
+            </div>
+            
+            <div>
+              <h3 style={{ 
+                color: '#ffffff', 
+                fontSize: '1.15rem', 
+                fontWeight: '700', 
+                marginBottom: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                AI Recommendation
+              </h3>
+              <p style={{ 
+                color: 'rgba(255, 255, 255, 0.8)', 
+                fontSize: '0.975rem', 
+                lineHeight: '1.6',
+                margin: 0
+              }}>
+                {recommendation}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="resume-paper-container" style={{ paddingBottom: '20px' }}>
           <div ref={paperRef} className="resume-paper" style={{
